@@ -3,6 +3,9 @@
 const Gpio = require('pigpio').Gpio;
 const colord = require("colord").colord;
 
+const PWM_RANGE = 8000;
+const GAMMA_COR = 2.8;
+
 module.exports = (api) => {
   api.registerAccessory('Dioder', DioderAccessoryPlugin);
 }
@@ -15,6 +18,9 @@ class DioderAccessoryPlugin {
     this.rPin = new Gpio(config['rPin'], {mode: Gpio.OUTPUT});
     this.gPin = new Gpio(config['gPin'], {mode: Gpio.OUTPUT});
     this.bPin = new Gpio(config['bPin'], {mode: Gpio.OUTPUT});
+    this.rPin.pwmRange(PWM_RANGE);
+    this.gPin.pwmRange(PWM_RANGE);
+    this.bPin.pwmRange(PWM_RANGE);
     this.rPin.pwmWrite(0);
     this.gPin.pwmWrite(0);
     this.bPin.pwmWrite(0);
@@ -79,14 +85,17 @@ class DioderAccessoryPlugin {
   }
 
   setHSV(c) {
-    // ToDo: Color Correction
     const { r, g, b } = colord(c).toRgb();
-    this.rPin.pwmWrite(r);
-    this.gPin.pwmWrite(g);
-    this.bPin.pwmWrite(b);
+    this.rPin.pwmWrite(Math.round(Math.pow(r / 255, GAMMA_COR) * PWM_RANGE));
+    this.gPin.pwmWrite(Math.round(Math.pow(g / 255, GAMMA_COR) * PWM_RANGE));
+    this.bPin.pwmWrite(Math.round(Math.pow(b / 255, GAMMA_COR) * PWM_RANGE));
   }
 
   getHSV() {
-    return colord({ r: this.rPin.getPwmDutyCycle(), g: this.gPin.getPwmDutyCycle(), b: this.bPin.getPwmDutyCycle() }).toHsv();
+    return colord({ 
+      r: Math.round(Math.pow(this.rPin.getPwmDutyCycle() / PWM_RANGE, 1 / GAMMA_COR) * 255),
+      g: Math.round(Math.pow(this.gPin.getPwmDutyCycle() / PWM_RANGE, 1 / GAMMA_COR) * 255),
+      b: Math.round(Math.pow(this.bPin.getPwmDutyCycle() / PWM_RANGE, 1 / GAMMA_COR) * 255)
+    }).toHsv();
   }
 }
