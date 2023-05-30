@@ -50,8 +50,7 @@ class DioderAccessoryPlugin {
   }
   
   setOn(on) {
-    // ToDo: Do we need to updateCharacteristics here?
-    if (on){
+    if (on && this.rPin.getPwmDutyCycle() === 0 && this.gPin.getPwmDutyCycle() === 0 && this.bPin.getPwmDutyCycle() === 0){
       this.setHSV({ h: this.getCharacteristic('Hue'), s: this.getCharacteristic('Saturation'), v: this.getCharacteristic('Brightness') || 100 });
     } else {
       this.rPin.pwmWrite(0);
@@ -61,6 +60,7 @@ class DioderAccessoryPlugin {
   }
 
   setBrightness(v) {
+    this.LEDservice.getCharacteristic(this.Characteristic.Brightness).updateValue(v);
     this.setHSV({ h: this.getCharacteristic('Hue'), s: this.getCharacteristic('Saturation'), v});
   }
 
@@ -69,6 +69,7 @@ class DioderAccessoryPlugin {
   }
 
   setHue(h) {
+    this.LEDservice.getCharacteristic(this.Characteristic.Hue).updateValue(h);
     this.setHSV({ h, s: this.getCharacteristic('Saturation'), v: this.getCharacteristic('Brightness')});
   }
 
@@ -77,7 +78,8 @@ class DioderAccessoryPlugin {
   }
 
   setSaturation(s) {
-    this.setHSV({ h: this.getCharacteristic('Hue'), s, v: this.getCharacteristic('Brightness')});
+    this.LEDservice.getCharacteristic(this.Characteristic.Saturation).updateValue(s);
+    // always followed by setHue call, which calls this.setHSV()
   }
 
   getSaturation() {
@@ -89,6 +91,7 @@ class DioderAccessoryPlugin {
     this.rPin.pwmWrite(Math.round(Math.pow(r / 255, GAMMA_COR) * PWM_RANGE));
     this.gPin.pwmWrite(Math.round(Math.pow(g / 255, GAMMA_COR) * PWM_RANGE));
     this.bPin.pwmWrite(Math.round(Math.pow(b / 255, GAMMA_COR) * PWM_RANGE));
+    this.log(`set RGB to ${r}, ${g}, ${b}`)
   }
 
   getHSV() {
