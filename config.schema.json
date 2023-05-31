@@ -1,0 +1,30 @@
+{
+  "pluginAlias": "Dioder",
+  "pluginType": "accessory",
+  "singular": false,
+  "schema": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "title": "Name",
+        "type": "string",
+        "required": true
+      },
+      "rPin": {
+        "title": "rPin",
+        "type": "integer",
+        "required": true
+      },
+      "gPin": {
+        "title": "gPin",
+        "type": "integer",
+        "required": true
+      },
+      "bPin": {
+        "title": "bPin",
+        "type": "integer",
+        "required": true
+      }
+    }
+  }
+}
