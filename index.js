@@ -50,8 +50,14 @@ class DioderAccessoryPlugin {
   }
   
   setOn(on) {
-    if (on && this.rPin.getPwmDutyCycle() === 0 && this.gPin.getPwmDutyCycle() === 0 && this.bPin.getPwmDutyCycle() === 0){
-      this.setHSV({ h: this.getCharacteristic('Hue'), s: this.getCharacteristic('Saturation'), v: this.getCharacteristic('Brightness') || 100 });
+    this.log("setOn", on);
+    if (on){
+      let v = this.getCharacteristic('Brightness');
+      if (v === 0){
+        v = 100;
+        this.LEDservice.getCharacteristic(this.Characteristic.Brightness).updateValue(v);
+      }
+      this.setHSV({ h: this.getCharacteristic('Hue'), s: this.getCharacteristic('Saturation'), v });
     } else {
       this.rPin.pwmWrite(0);
       this.gPin.pwmWrite(0);
@@ -60,6 +66,7 @@ class DioderAccessoryPlugin {
   }
 
   setBrightness(v) {
+    this.log("setBrightness", v);
     this.LEDservice.getCharacteristic(this.Characteristic.Brightness).updateValue(v);
     this.setHSV({ h: this.getCharacteristic('Hue'), s: this.getCharacteristic('Saturation'), v});
   }
@@ -69,6 +76,7 @@ class DioderAccessoryPlugin {
   }
 
   setHue(h) {
+    this.log("setHue", h);
     this.LEDservice.getCharacteristic(this.Characteristic.Hue).updateValue(h);
     this.setHSV({ h, s: this.getCharacteristic('Saturation'), v: this.getCharacteristic('Brightness')});
   }
@@ -78,8 +86,9 @@ class DioderAccessoryPlugin {
   }
 
   setSaturation(s) {
+    this.log("setSaturation", s);
     this.LEDservice.getCharacteristic(this.Characteristic.Saturation).updateValue(s);
-    // always followed by setHue call, which calls this.setHSV()
+    this.setHSV({ h: this.getCharacteristic('Hue'), s, v: this.getCharacteristic('Brightness')});
   }
 
   getSaturation() {
