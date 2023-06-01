@@ -1,29 +1,38 @@
 {
   "pluginAlias": "Dioder",
-  "pluginType": "accessory",
-  "singular": false,
+  "pluginType": "platform",
+  "singular": true,
   "schema": {
     "type": "object",
     "properties": {
-      "name": {
-        "title": "Name",
-        "type": "string",
-        "required": true
-      },
-      "rPin": {
-        "title": "rPin",
-        "type": "integer",
-        "required": true
-      },
-      "gPin": {
-        "title": "gPin",
-        "type": "integer",
-        "required": true
-      },
-      "bPin": {
-        "title": "bPin",
-        "type": "integer",
-        "required": true
+      "leds": {
+        "title": "LED strips",
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "title": "Name",
+              "type": "string",
+              "required": true
+            },
+            "rPin": {
+              "title": "rPin",
+              "type": "integer",
+              "required": true
+            },
+            "gPin": {
+              "title": "gPin",
+              "type": "integer",
+              "required": true
+            },
+            "bPin": {
+              "title": "bPin",
+              "type": "integer",
+              "required": true
+            }
+          }
+        }
       }
     }
   }
