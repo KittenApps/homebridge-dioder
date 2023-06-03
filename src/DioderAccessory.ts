@@ -64,6 +64,7 @@ export class DioderAccessory implements AccessoryPlugin {
   
   setOn(on: CharacteristicValue): void {
     this.log("setOn", on);
+    this.LEDservice.getCharacteristic(this.Characteristic.On).updateValue(on);
     if (on){
       let v = this.getCharacteristicValue('Brightness');
       if (v === 0){
@@ -113,11 +114,16 @@ export class DioderAccessory implements AccessoryPlugin {
   }
 
   setHSV(c: HsvColor): void {
-    const { r, g, b } = colord(c).toRgb();
-    this.rPin.pwmWrite(Math.round(Math.pow(r / 255, GAMMA_COR) * PWM_RANGE));
-    this.gPin.pwmWrite(Math.round(Math.pow(g / 255, GAMMA_COR) * PWM_RANGE));
-    this.bPin.pwmWrite(Math.round(Math.pow(b / 255, GAMMA_COR) * PWM_RANGE));
-    this.log(`set RGB to ${r}, ${g}, ${b}`)
+    if (this.LEDservice.getCharacteristic(this.Characteristic.On).value) {
+      const { r, g, b } = colord(c).toRgb();
+      this.rPin.pwmWrite(Math.round(Math.pow(r / 255, GAMMA_COR) * PWM_RANGE));
+      this.gPin.pwmWrite(Math.round(Math.pow(g / 255, GAMMA_COR) * PWM_RANGE));
+      this.bPin.pwmWrite(Math.round(Math.pow(b / 255, GAMMA_COR) * PWM_RANGE));
+      this.log(`set RGB to ${r}, ${g}, ${b}`)
+    } else {
+      this.log('Skipping color change while light bulb being off');
+    }
+    
   }
 
   getHSV(): HsvColor {
