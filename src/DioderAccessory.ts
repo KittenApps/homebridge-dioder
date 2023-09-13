@@ -11,6 +11,7 @@ export interface LedConfig {
 }
 
 const PWM_RANGE = 8000;
+const MIN_PWM = 31.4995; // min pwm to get actually light from dioder, depends on PWM_RANGE
 const GAMMA_COR = 2.8;
 
 export class DioderAccessory implements AccessoryPlugin {
@@ -80,7 +81,7 @@ export class DioderAccessory implements AccessoryPlugin {
   }
 
   getOn(): boolean {
-    return this.rPin.getPwmDutyCycle() > 0 || this.gPin.getPwmDutyCycle() > 0 || this.bPin.getPwmDutyCycle() > 0;
+    return this.rPin.getPwmDutyCycle() >= MIN_PWM || this.gPin.getPwmDutyCycle() >= MIN_PWM || this.bPin.getPwmDutyCycle() >= MIN_PWM;
   }
 
   setBrightness(v: CharacteristicValue): void {
@@ -116,9 +117,9 @@ export class DioderAccessory implements AccessoryPlugin {
   setHSV(c: HsvColor): void {
     if (this.LEDservice.getCharacteristic(this.Characteristic.On).value) {
       const { r, g, b } = colord(c).toRgb();
-      this.rPin.pwmWrite(Math.round(Math.pow(r / 255, GAMMA_COR) * PWM_RANGE));
-      this.gPin.pwmWrite(Math.round(Math.pow(g / 255, GAMMA_COR) * PWM_RANGE));
-      this.bPin.pwmWrite(Math.round(Math.pow(b / 255, GAMMA_COR) * PWM_RANGE));
+      this.rPin.pwmWrite(Math.round(Math.pow(r / 255, GAMMA_COR) * (PWM_RANGE - MIN_PWM) + MIN_PWM));
+      this.gPin.pwmWrite(Math.round(Math.pow(g / 255, GAMMA_COR) * (PWM_RANGE - MIN_PWM) + MIN_PWM));
+      this.bPin.pwmWrite(Math.round(Math.pow(b / 255, GAMMA_COR) * (PWM_RANGE - MIN_PWM) + MIN_PWM));
       this.log(`set RGB to ${r}, ${g}, ${b}`)
     } else {
       this.log('Skipping color change while light bulb being off');
@@ -128,9 +129,9 @@ export class DioderAccessory implements AccessoryPlugin {
 
   getHSV(): HsvColor {
     return colord({ 
-      r: Math.round(Math.pow(this.rPin.getPwmDutyCycle() / PWM_RANGE, 1 / GAMMA_COR) * 255),
-      g: Math.round(Math.pow(this.gPin.getPwmDutyCycle() / PWM_RANGE, 1 / GAMMA_COR) * 255),
-      b: Math.round(Math.pow(this.bPin.getPwmDutyCycle() / PWM_RANGE, 1 / GAMMA_COR) * 255)
+      r: Math.round(Math.pow((this.rPin.getPwmDutyCycle() - MIN_PWM) / (PWM_RANGE - MIN_PWM), 1 / GAMMA_COR) * 255),
+      g: Math.round(Math.pow((this.gPin.getPwmDutyCycle() - MIN_PWM) / (PWM_RANGE - MIN_PWM), 1 / GAMMA_COR) * 255),
+      b: Math.round(Math.pow((this.bPin.getPwmDutyCycle() - MIN_PWM) / (PWM_RANGE - MIN_PWM), 1 / GAMMA_COR) * 255)
     }).toHsv();
   }
 }
