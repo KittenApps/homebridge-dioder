@@ -56,7 +56,28 @@ export class DioderAccessory implements AccessoryPlugin {
   }
 
   identify(): void {
-    this.log("Identify!"); // ToDo
+    const r = this.rPin.getPwmDutyCycle();
+    const g = this.gPin.getPwmDutyCycle();
+    const b = this.bPin.getPwmDutyCycle();
+    this.rPin.pwmWrite(0);
+    this.gPin.pwmWrite(0);
+    this.bPin.pwmWrite(0);
+    setTimeout(() => {
+      this.rPin.pwmWrite(PWM_RANGE);
+      this.gPin.pwmWrite(0);
+      this.bPin.pwmWrite(0);
+      setTimeout(() => {
+        this.rPin.pwmWrite(0);
+        this.gPin.pwmWrite(0);
+        this.bPin.pwmWrite(0);
+        setTimeout(() => {
+          this.rPin.pwmWrite(r);
+          this.gPin.pwmWrite(g);
+          this.bPin.pwmWrite(b);
+        }, 1000);
+      }, 3000);
+    }, 1000);
+    this.log("Identify!");
   }
 
   getCharacteristicValue(c: LEDCharacteristic): number {
@@ -65,14 +86,14 @@ export class DioderAccessory implements AccessoryPlugin {
   
   setOn(on: CharacteristicValue): void {
     this.log("setOn", on);
-    this.LEDservice.getCharacteristic(this.Characteristic.On).updateValue(on);
+    //this.LEDservice.getCharacteristic(this.Characteristic.On).updateValue(on);
     if (on){
-      let v = this.getCharacteristicValue('Brightness');
+      let {h, s, v} = this.getHSV();
       if (v === 0){
         v = 100;
         this.LEDservice.getCharacteristic(this.Characteristic.Brightness).updateValue(v);
       }
-      this.setHSV({ h: this.getCharacteristicValue('Hue'), s: this.getCharacteristicValue('Saturation'), v });
+      this.setHSV({ h, s, v });
     } else {
       this.rPin.pwmWrite(0);
       this.gPin.pwmWrite(0);
@@ -86,8 +107,9 @@ export class DioderAccessory implements AccessoryPlugin {
 
   setBrightness(v: CharacteristicValue): void {
     this.log("setBrightness", v);
-    this.LEDservice.getCharacteristic(this.Characteristic.Brightness).updateValue(v);
-    this.setHSV({ h: this.getCharacteristicValue('Hue'), s: this.getCharacteristicValue('Saturation'), v: v as number});
+    //this.LEDservice.getCharacteristic(this.Characteristic.Brightness).updateValue(v);
+    const {h, s} = this.getHSV();
+    this.setHSV({ h, s, v: v as number});
   }
 
   getBrightness(): number {
@@ -96,8 +118,9 @@ export class DioderAccessory implements AccessoryPlugin {
 
   setHue(h: CharacteristicValue): void {
     this.log("setHue", h);
-    this.LEDservice.getCharacteristic(this.Characteristic.Hue).updateValue(h);
-    this.setHSV({ h: h as number, s: this.getCharacteristicValue('Saturation'), v: this.getCharacteristicValue('Brightness')});
+    //this.LEDservice.getCharacteristic(this.Characteristic.Hue).updateValue(h);
+    const {s, v} = this.getHSV();
+    this.setHSV({ h: h as number, s, v});
   }
 
   getHue(): number {
@@ -106,8 +129,9 @@ export class DioderAccessory implements AccessoryPlugin {
 
   setSaturation(s: CharacteristicValue): void {
     this.log("setSaturation", s);
-    this.LEDservice.getCharacteristic(this.Characteristic.Saturation).updateValue(s);
-    this.setHSV({ h: this.getCharacteristicValue('Hue'), s: s as number, v: this.getCharacteristicValue('Brightness')});
+    //this.LEDservice.getCharacteristic(this.Characteristic.Saturation).updateValue(s);
+    const {h, v} = this.getHSV();
+    this.setHSV({ h, s: s as number, v});
   }
 
   getSaturation(): number {
@@ -122,7 +146,7 @@ export class DioderAccessory implements AccessoryPlugin {
       this.bPin.pwmWrite(Math.round(Math.pow(b / 255, GAMMA_COR) * (PWM_RANGE - MIN_PWM) + MIN_PWM));
       this.log(`set RGB to ${r}, ${g}, ${b}`)
     } else {
-      this.log('Skipping color change while light bulb being off');
+      this.log.warn('Skipping color change while light bulb being off');
     }
     
   }

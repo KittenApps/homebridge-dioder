@@ -1,13 +1,13 @@
 {
   "compilerOptions": {
     "lib": ["es2023"],
-    "module": "Node16",
+    "module": "nodenext",
     "target": "es2022",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "moduleResolution": "node",
+    "moduleResolution": "nodenext",
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
