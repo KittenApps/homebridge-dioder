@@ -88,9 +88,10 @@ export class DioderAccessory implements AccessoryPlugin {
     if (on){
       if (this.getBrightness() === 0){
         this.hsv.v = 100;
-        this.LEDservice.updateCharacteristic(this.Characteristic.Brightness, 100);
+        this.LEDservice.setCharacteristic(this.Characteristic.Brightness, 100);
+      } else {
+        this.setHSV(this.hsv);
       }
-      this.setHSV(this.hsv);
     } else {
       this.rPin.pwmWrite(0);
       this.gPin.pwmWrite(0);
