@@ -5,7 +5,7 @@
   "description": "Homebridge plugin to control Dioder LED strips over pigpio pins",
   "main": "dist/index.js",
   "scripts": {
-    "prepare": "rm -rf dist && tsc"
+    "prepare": "sudo rm -rf dist && tsc && sudo hb-service restart --allow-root"
   },
   "repository": {
     "type": "git",
