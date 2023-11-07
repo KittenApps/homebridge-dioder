@@ -85,11 +85,10 @@ export class DioderAccessory implements AccessoryPlugin {
   
   setOn(on: CharacteristicValue): void {
     this.log("setOn", on);
-    //this.LEDservice.getCharacteristic(this.Characteristic.On).updateValue(on);
     if (on){
       if (this.getBrightness() === 0){
         this.hsv.v = 100;
-        this.LEDservice.getCharacteristic(this.Characteristic.Brightness).updateValue(100);
+        this.LEDservice.updateCharacteristic(this.Characteristic.Brightness, 100);
       }
       this.setHSV(this.hsv);
     } else {
@@ -105,7 +104,6 @@ export class DioderAccessory implements AccessoryPlugin {
 
   setBrightness(v: CharacteristicValue): void {
     this.log("setBrightness", v);
-    //this.LEDservice.getCharacteristic(this.Characteristic.Brightness).updateValue(v);
     this.hsv.v = v as number;
     this.setHSV(this.hsv);
   }
@@ -116,7 +114,6 @@ export class DioderAccessory implements AccessoryPlugin {
 
   setHue(h: CharacteristicValue): void {
     this.log("setHue", h);
-    //this.LEDservice.getCharacteristic(this.Characteristic.Hue).updateValue(h);
     this.hsv.h = h as number;
     this.setHSV(this.hsv);
   }
@@ -127,7 +124,6 @@ export class DioderAccessory implements AccessoryPlugin {
 
   setSaturation(s: CharacteristicValue): void {
     this.log("setSaturation", s);
-    //this.LEDservice.getCharacteristic(this.Characteristic.Saturation).updateValue(s);
     this.hsv.s = s as number;
     this.setHSV(this.hsv);
   }
