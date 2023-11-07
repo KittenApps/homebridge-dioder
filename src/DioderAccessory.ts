@@ -137,7 +137,7 @@ export class DioderAccessory implements AccessoryPlugin {
   }
 
   setHSV(c: HsvColor): void {
-    if (this.LEDservice.getCharacteristic(this.Characteristic.On).value) {
+    if (this.getBrightness() > 0) {
       const { r, g, b } = colord(c).toRgb();
       this.rPin.pwmWrite(Math.round(Math.pow(r / 255, GAMMA_COR) * (PWM_RANGE - MIN_PWM) + MIN_PWM));
       this.gPin.pwmWrite(Math.round(Math.pow(g / 255, GAMMA_COR) * (PWM_RANGE - MIN_PWM) + MIN_PWM));
