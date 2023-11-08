@@ -2,7 +2,7 @@ import { Gpio } from 'pigpio';
 import { colord, HsvColor } from 'colord';
 
 import type { AccessoryPlugin, HAP, CharacteristicValue, Logging, Service } from 'homebridge';
-type LEDCharacteristic = 'Brightness' | 'Hue' | 'Saturation';
+
 export interface LedConfig {
   name: string;
   rPin: number;
@@ -22,6 +22,7 @@ export class DioderAccessory implements AccessoryPlugin {
   private readonly bPin: Gpio;
   public readonly name: string;
   private hsv: HsvColor;
+  private on: boolean;
 
   private readonly LEDservice: Service;
   private readonly informationService: Service;
@@ -40,6 +41,7 @@ export class DioderAccessory implements AccessoryPlugin {
     this.gPin.pwmWrite(0);
     this.bPin.pwmWrite(0);
     this.hsv = { h: 0, s: 0, v: 0};
+    this.on = false;
     this.log("PWM frequency:", this.rPin.getPwmFrequency());
 
     this.informationService = new hap.Service.AccessoryInformation()
@@ -81,6 +83,7 @@ export class DioderAccessory implements AccessoryPlugin {
   
   setOn(on: CharacteristicValue): void {
     this.log("setOn", on);
+    this.on = on as boolean;
     if (on){
       if (this.getBrightness() === 0){
         this.hsv.v = 100;
@@ -130,7 +133,7 @@ export class DioderAccessory implements AccessoryPlugin {
   }
 
   setHSV(c: HsvColor): void {
-    if (this.getOn() && this.getBrightness() > 0) {
+    if (this.on && this.getBrightness() > 0) {
       const { r, g, b } = colord(c).toRgb();
       this.rPin.pwmWrite(Math.round(Math.pow(r / 255, GAMMA_COR) * (PWM_RANGE - MIN_PWM) + MIN_PWM));
       this.gPin.pwmWrite(Math.round(Math.pow(g / 255, GAMMA_COR) * (PWM_RANGE - MIN_PWM) + MIN_PWM));
