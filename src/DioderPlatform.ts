@@ -6,8 +6,8 @@ export class DioderPlatform implements StaticPlatformPlugin {
   private readonly accessPlugin: AccessoryPlugin[];
 
   constructor(log: Logging, config: PlatformConfig, api: API) {
-    const dioderAccessories: DioderAccessory[] = config.leds.map((c: LedConfig) => new DioderAccessory(log, c, api.hap));
-    this.accessPlugin = [...(dioderAccessories as AccessoryPlugin[]), new RainbowAccessory(log, dioderAccessories, api.hap)];
+    const dioderAccessories = config.leds.map((c: LedConfig) => new DioderAccessory(log, c, api.hap));
+    this.accessPlugin = [...dioderAccessories, new RainbowAccessory(log, dioderAccessories, api.hap)];
     log.info("Dioder Platform finished initializing!");
   }
 

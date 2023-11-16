@@ -22,7 +22,6 @@ export class RainbowAccessory implements AccessoryPlugin {
   constructor(private readonly log: Logging, leds: DioderAccessory[], hap: HAP) {
     this.leds = leds;
     log.warn("length:" + leds.length);
-    console.log(leds);
     this.name = "Rainbow Effect";
     this.Characteristic = hap.Characteristic;
     this.on = false;
@@ -75,7 +74,7 @@ export class RainbowAccessory implements AccessoryPlugin {
   }
 
   runAnimation(): void {
-    for (let i = 0; i < this.leds.length; i++){
+    for (let i = 0; i < 4; i++){
       this.leds[i].setHSV({
         h: (this.currentHue + i * OFFSET) % 360,
         s: SATURATION,
