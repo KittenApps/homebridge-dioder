@@ -14,13 +14,11 @@ export class RainbowAccessory implements AccessoryPlugin {
   private currentHue: number;
   private on: boolean;
   private interval: NodeJS.Timeout | undefined;
-  public readonly leds: DioderAccessory[];
 
   private readonly LEDservice: Service;
   private readonly informationService: Service;
 
-  constructor(private readonly log: Logging, leds: DioderAccessory[], hap: HAP) {
-    this.leds = leds;
+  constructor(private readonly log: Logging, private readonly leds: DioderAccessory[], hap: HAP) {
     log.warn("length:" + leds.length);
     this.name = "Rainbow Effect";
     this.Characteristic = hap.Characteristic;
@@ -54,7 +52,7 @@ export class RainbowAccessory implements AccessoryPlugin {
         this.brightness = 100;
         this.LEDservice.setCharacteristic(this.Characteristic.Brightness, 100);
       }
-      this.interval = setInterval(this.runAnimation, INTERVAL);
+      this.interval = setInterval(() => this.runAnimation(), INTERVAL);
     } else {
       clearInterval(this.interval);
     }
@@ -74,7 +72,7 @@ export class RainbowAccessory implements AccessoryPlugin {
   }
 
   runAnimation(): void {
-    for (let i = 0; i < 4; i++){
+    for (let i = 0; i < this.leds.length; i++){
       this.leds[i].setHSV({
         h: (this.currentHue + i * OFFSET) % 360,
         s: SATURATION,
