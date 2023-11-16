@@ -138,7 +138,7 @@ export class DioderAccessory implements AccessoryPlugin {
       this.rPin.pwmWrite(Math.round(Math.pow(r / 255, GAMMA_COR) * (PWM_RANGE - MIN_PWM) + MIN_PWM));
       this.gPin.pwmWrite(Math.round(Math.pow(g / 255, GAMMA_COR) * (PWM_RANGE - MIN_PWM) + MIN_PWM));
       this.bPin.pwmWrite(Math.round(Math.pow(b / 255, GAMMA_COR) * (PWM_RANGE - MIN_PWM) + MIN_PWM));
-      this.log(`set RGB to ${r}, ${g}, ${b}`)
+      this.log(`set ${this.name} RGB to ${r}, ${g}, ${b}`)
     } else {
       this.log.warn('Skipping color change while light bulb being off');
     }

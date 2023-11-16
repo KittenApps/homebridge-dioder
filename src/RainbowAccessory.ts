@@ -2,8 +2,8 @@ import type { AccessoryPlugin, HAP, CharacteristicValue, Logging, Service } from
 import type { DioderAccessory } from './DioderAccessory';
 
 const INTERVAL = 100;
-const SPEED = 5;
-const OFFSET = 50;
+const SPEED = 1;
+const OFFSET = 30;
 const SATURATION = 100;
 
 export class RainbowAccessory implements AccessoryPlugin {
@@ -71,6 +71,7 @@ export class RainbowAccessory implements AccessoryPlugin {
   }
 
   runAnimation(): void {
+    this.log.warn(`currentHue: ${this.currentHue}`);
     for (let i = 0; i < this.leds.length; i++){
       this.leds[i].setHSV({
         h: (this.currentHue + i * OFFSET) % 360,
