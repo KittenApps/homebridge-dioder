@@ -1,8 +1,8 @@
 import type { AccessoryPlugin, HAP, CharacteristicValue, Logging, Service } from 'homebridge';
 import type { DioderAccessory } from './DioderAccessory';
 
-const INTERVAL = 100;
-const SPEED = 1;
+const INTERVAL = 20;
+const SPEED = 0.2;
 const OFFSET = 50;
 const SATURATION = 100;
 
