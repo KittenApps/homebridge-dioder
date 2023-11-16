@@ -3,7 +3,7 @@ import type { DioderAccessory } from './DioderAccessory';
 
 const INTERVAL = 100;
 const SPEED = 1;
-const OFFSET = 30;
+const OFFSET = 50;
 const SATURATION = 100;
 
 export class RainbowAccessory implements AccessoryPlugin {
@@ -79,6 +79,6 @@ export class RainbowAccessory implements AccessoryPlugin {
         v: this.brightness
       }, true);
     }
-    this.currentHue += SPEED;
+    this.currentHue = (this.currentHue + SPEED) % 360;
   }
 }
