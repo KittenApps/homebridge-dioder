@@ -45,7 +45,7 @@ export class DioderAccessory implements AccessoryPlugin {
     this.log("PWM frequency:", this.rPin.getPwmFrequency());
 
     this.informationService = new hap.Service.AccessoryInformation()
-      .setCharacteristic(hap.Characteristic.Manufacturer, "Silizia")
+      .setCharacteristic(this.Characteristic.Manufacturer, "Silizia")
       .setCharacteristic(this.Characteristic.Model, "Fancy LED");
 
     this.LEDservice = new hap.Service.Lightbulb(config.name);
@@ -132,8 +132,8 @@ export class DioderAccessory implements AccessoryPlugin {
     return this.hsv.s;
   }
 
-  setHSV(c: HsvColor): void {
-    if (this.on && this.getBrightness() > 0) {
+  setHSV(c: HsvColor, t?: boolean): void {
+    if (t || (this.on && this.getBrightness() > 0)) {
       const { r, g, b } = colord(c).toRgb();
       this.rPin.pwmWrite(Math.round(Math.pow(r / 255, GAMMA_COR) * (PWM_RANGE - MIN_PWM) + MIN_PWM));
       this.gPin.pwmWrite(Math.round(Math.pow(g / 255, GAMMA_COR) * (PWM_RANGE - MIN_PWM) + MIN_PWM));
