@@ -8,6 +8,7 @@ const SATURATION = 100;
 
 export class RainbowAccessory implements AccessoryPlugin {
   private readonly Characteristic;
+  public readonly name: string;
 
   private brightness: number;
   private currentHue: number;
@@ -18,6 +19,7 @@ export class RainbowAccessory implements AccessoryPlugin {
   private readonly informationService: Service;
 
   constructor(private readonly log: Logging, private readonly leds: DioderAccessory[], hap: HAP) {
+    this.name = "Rainbow Effect";
     this.Characteristic = hap.Characteristic;
     this.on = false;
     this.brightness = 0;
@@ -28,7 +30,7 @@ export class RainbowAccessory implements AccessoryPlugin {
       .setCharacteristic(this.Characteristic.Manufacturer, "Silizia")
       .setCharacteristic(this.Characteristic.Model, "Fancy LED");
 
-    this.LEDservice = new hap.Service.Lightbulb("Rainbow Effect");
+    this.LEDservice = new hap.Service.Lightbulb(this.name);
     this.LEDservice.getCharacteristic(this.Characteristic.On).onGet(this.getOn.bind(this)).onSet(this.setOn.bind(this));
     this.LEDservice.getCharacteristic(this.Characteristic.Brightness).onGet(this.getBrightness.bind(this)).onSet(this.setBrightness.bind(this));
   }
