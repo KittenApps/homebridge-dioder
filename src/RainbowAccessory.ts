@@ -14,11 +14,15 @@ export class RainbowAccessory implements AccessoryPlugin {
   private currentHue: number;
   private on: boolean;
   private interval: NodeJS.Timeout | undefined;
+  public readonly leds: DioderAccessory[];
 
   private readonly LEDservice: Service;
   private readonly informationService: Service;
 
-  constructor(private readonly log: Logging, private readonly leds: DioderAccessory[], hap: HAP) {
+  constructor(private readonly log: Logging, leds: DioderAccessory[], hap: HAP) {
+    this.leds = leds;
+    log.warn("length:" + leds.length);
+    console.log(leds);
     this.name = "Rainbow Effect";
     this.Characteristic = hap.Characteristic;
     this.on = false;
