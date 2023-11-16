@@ -19,7 +19,6 @@ export class RainbowAccessory implements AccessoryPlugin {
   private readonly informationService: Service;
 
   constructor(private readonly log: Logging, private readonly leds: DioderAccessory[], hap: HAP) {
-    log.warn("length:" + leds.length);
     this.name = "Rainbow Effect";
     this.Characteristic = hap.Characteristic;
     this.on = false;
@@ -79,6 +78,6 @@ export class RainbowAccessory implements AccessoryPlugin {
         v: this.brightness
       }, true);
     }
-    this.currentHue *= SPEED;
+    this.currentHue += SPEED;
   }
 }
