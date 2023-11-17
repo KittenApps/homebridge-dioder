@@ -1,4 +1,4 @@
-import type { AccessoryPlugin, HAP, CharacteristicValue, Logging, Service } from 'homebridge';
+import type { PlatformAccessory, CharacteristicValue, Service, Logging, HAP } from 'homebridge';
 import type { DioderAccessory } from './DioderAccessory';
 
 const INTERVAL = 1000 / 30; // 30 FPS
@@ -6,45 +6,43 @@ const SPEED = 0.5;
 const OFFSET = 50;
 const SATURATION = 100;
 
-export class RainbowAccessory implements AccessoryPlugin {
-  private readonly Characteristic;
-  public readonly name: string;
-
+export class RainbowAccessory {
   private brightness: number;
   private currentHue: number;
   private on: boolean;
   private interval: NodeJS.Timeout | undefined;
 
   private readonly LEDservice: Service;
-  private readonly informationService: Service;
+  private readonly Characteristic;
 
-  constructor(private readonly log: Logging, private readonly leds: DioderAccessory[], hap: HAP) {
-    this.name = "Rainbow Effect";
+  constructor(private readonly log: Logging, hap: HAP, private readonly accessory: PlatformAccessory, private readonly leds: DioderAccessory[]) {
     this.Characteristic = hap.Characteristic;
+
     this.on = false;
     this.brightness = 0;
     this.currentHue = 0;
     this.interval = undefined;
 
-    this.informationService = new hap.Service.AccessoryInformation()
-      .setCharacteristic(this.Characteristic.Manufacturer, "Silizia")
-      .setCharacteristic(this.Characteristic.Model, "Fancy LED");
+    this.accessory.getService(hap.Service.AccessoryInformation)!
+      .setCharacteristic(this.Characteristic.Manufacturer, 'Silizia')
+      .setCharacteristic(this.Characteristic.Model, 'Fancy LED')
+      .setCharacteristic(this.Characteristic.SerialNumber, '42');
+    
+    this.accessory.on('identify', () => this.identify());
 
-    this.LEDservice = new hap.Service.Lightbulb(this.name);
+    this.LEDservice = this.accessory.getService(hap.Service.Lightbulb) || this.accessory.addService(hap.Service.Lightbulb);
+    this.LEDservice.setCharacteristic(this.Characteristic.Name, "Rainbow Effect");
+
     this.LEDservice.getCharacteristic(this.Characteristic.On).onGet(this.getOn.bind(this)).onSet(this.setOn.bind(this));
     this.LEDservice.getCharacteristic(this.Characteristic.Brightness).onGet(this.getBrightness.bind(this)).onSet(this.setBrightness.bind(this));
   }
 
-  getServices(): Service[] {
-    return [this.informationService, this.LEDservice];
-  }
-
   identify(): void {
-    this.log("Identify!");
+    this.log.info("Identify!");
   }
   
   setOn(on: CharacteristicValue): void {
-    this.log("rainbow setOn", on);
+    this.log.info("rainbow setOn", on);
     this.on = on as boolean;
     if (on){
       if (this.getBrightness() === 0){
@@ -64,7 +62,7 @@ export class RainbowAccessory implements AccessoryPlugin {
   }
 
   setBrightness(v: CharacteristicValue): void {
-    this.log("rainbow setBrightness", v);
+    this.log.info("rainbow setBrightness", v);
     this.brightness = v as number;
   }
 

@@ -1,9 +1,9 @@
 import { Gpio } from 'pigpio';
 import { colord, HsvColor } from 'colord';
 
-import type { AccessoryPlugin, HAP, CharacteristicValue, Logging, Service } from 'homebridge';
+import type { CharacteristicValue, PlatformAccessory, Service, Logging, HAP } from 'homebridge';
 
-export interface LedConfig {
+interface LedConfig {
   name: string;
   rPin: number;
   gPin: number;
@@ -14,26 +14,22 @@ const PWM_RANGE = 8000;
 const MIN_PWM = 31.4995; // min pwm to get actually light from dioder, depends on PWM_RANGE
 const GAMMA_COR = 2.8;
 
-export class DioderAccessory implements AccessoryPlugin {
-  private readonly Characteristic;
-
+export class DioderAccessory {
   private readonly rPin: Gpio;
   private readonly gPin: Gpio;
   private readonly bPin: Gpio;
-  public readonly name: string;
   private hsv: HsvColor;
   private on: boolean;
 
   private readonly LEDservice: Service;
-  private readonly informationService: Service;
+  private readonly Characteristic;
 
-  constructor(private readonly log: Logging, config: LedConfig, hap: HAP) {
-    this.name = config.name;
+  constructor(private readonly log: Logging, hap: HAP, private readonly accessory: PlatformAccessory) {
     this.Characteristic = hap.Characteristic;
-
-    this.rPin = new Gpio(config.rPin, { mode: Gpio.OUTPUT });
-    this.gPin = new Gpio(config.gPin, { mode: Gpio.OUTPUT });
-    this.bPin = new Gpio(config.bPin, { mode: Gpio.OUTPUT });
+  
+    this.rPin = new Gpio(accessory.context.config.rPin, { mode: Gpio.OUTPUT });
+    this.gPin = new Gpio(accessory.context.config.gPin, { mode: Gpio.OUTPUT });
+    this.bPin = new Gpio(accessory.context.config.bPin, { mode: Gpio.OUTPUT });
     this.rPin.pwmRange(PWM_RANGE);
     this.gPin.pwmRange(PWM_RANGE);
     this.bPin.pwmRange(PWM_RANGE);
@@ -42,21 +38,22 @@ export class DioderAccessory implements AccessoryPlugin {
     this.bPin.pwmWrite(0);
     this.hsv = { h: 0, s: 0, v: 0};
     this.on = false;
-    this.log("PWM frequency:", this.rPin.getPwmFrequency());
+    this.log.info("PWM frequency:", this.rPin.getPwmFrequency());
 
-    this.informationService = new hap.Service.AccessoryInformation()
-      .setCharacteristic(this.Characteristic.Manufacturer, "Silizia")
-      .setCharacteristic(this.Characteristic.Model, "Fancy LED");
+    this.accessory.getService(hap.Service.AccessoryInformation)!
+      .setCharacteristic(this.Characteristic.Manufacturer, 'Silizia')
+      .setCharacteristic(this.Characteristic.Model, 'Fancy LED')
+      .setCharacteristic(this.Characteristic.SerialNumber, '42');
+    
+    this.accessory.on('identify', () => this.identify());
 
-    this.LEDservice = new hap.Service.Lightbulb(config.name);
+    this.LEDservice = this.accessory.getService(hap.Service.Lightbulb) || this.accessory.addService(hap.Service.Lightbulb);
+    this.LEDservice.setCharacteristic(this.Characteristic.Name, accessory.context.config.name);
+
     this.LEDservice.getCharacteristic(this.Characteristic.On).onGet(this.getOn.bind(this)).onSet(this.setOn.bind(this));
     this.LEDservice.getCharacteristic(this.Characteristic.Brightness).onGet(this.getBrightness.bind(this)).onSet(this.setBrightness.bind(this));
     this.LEDservice.getCharacteristic(this.Characteristic.Hue).onGet(this.getHue.bind(this)).onSet(this.setHue.bind(this));
     this.LEDservice.getCharacteristic(this.Characteristic.Saturation).onGet(this.getSaturation.bind(this)).onSet(this.setSaturation.bind(this));
-  }
-
-  getServices(): Service[] {
-    return [this.informationService, this.LEDservice];
   }
 
   identify(): void {
@@ -78,11 +75,11 @@ export class DioderAccessory implements AccessoryPlugin {
         }
       }, 3000);
     }, 1000);
-    this.log("Identify!");
+    this.log.info("Identify!");
   }
   
   setOn(on: CharacteristicValue): void {
-    this.log("setOn", on);
+    this.log.info("setOn", on);
     this.on = on as boolean;
     if (on){
       if (this.getBrightness() === 0){
@@ -103,7 +100,7 @@ export class DioderAccessory implements AccessoryPlugin {
   }
 
   setBrightness(v: CharacteristicValue): void {
-    this.log("setBrightness", v);
+    this.log.info("setBrightness", v);
     this.hsv.v = v as number;
     this.setHSV(this.hsv);
   }
@@ -113,7 +110,7 @@ export class DioderAccessory implements AccessoryPlugin {
   }
 
   setHue(h: CharacteristicValue): void {
-    this.log("setHue", h);
+    this.log.info("setHue", h);
     this.hsv.h = h as number;
     this.setHSV(this.hsv);
   }
@@ -123,7 +120,7 @@ export class DioderAccessory implements AccessoryPlugin {
   }
 
   setSaturation(s: CharacteristicValue): void {
-    this.log("setSaturation", s);
+    this.log.info("setSaturation", s);
     this.hsv.s = s as number;
     this.setHSV(this.hsv);
   }
@@ -138,7 +135,7 @@ export class DioderAccessory implements AccessoryPlugin {
       this.rPin.pwmWrite(Math.round(Math.pow(r / 255, GAMMA_COR) * (PWM_RANGE - MIN_PWM) + MIN_PWM));
       this.gPin.pwmWrite(Math.round(Math.pow(g / 255, GAMMA_COR) * (PWM_RANGE - MIN_PWM) + MIN_PWM));
       this.bPin.pwmWrite(Math.round(Math.pow(b / 255, GAMMA_COR) * (PWM_RANGE - MIN_PWM) + MIN_PWM));
-      this.log(`set ${this.name} RGB to ${r}, ${g}, ${b}`)
+      this.log.info(`set ${this.accessory.displayName} RGB to ${r}, ${g}, ${b}`)
     } else {
       this.log.warn('Skipping color change while light bulb being off');
     }

@@ -1,17 +1,47 @@
-import { DioderAccessory, LedConfig } from "./DioderAccessory";
+import { DioderAccessory } from "./DioderAccessory";
 import { RainbowAccessory } from "./RainbowAccessory";
-import type { AccessoryPlugin, API, Logging, PlatformConfig, StaticPlatformPlugin } from "homebridge";
+import type { PlatformAccessory, API, Logging, PlatformConfig, Service, Characteristic, DynamicPlatformPlugin } from "homebridge";
 
-export class DioderPlatform implements StaticPlatformPlugin {
-  private readonly accessPlugin: AccessoryPlugin[];
+export class DioderPlatform implements DynamicPlatformPlugin {
+  public readonly accessories: PlatformAccessory[] = [];
 
-  constructor(log: Logging, config: PlatformConfig, api: API) {
-    const dioderAccessories = config.leds.map((c: LedConfig) => new DioderAccessory(log, c, api.hap));
-    this.accessPlugin = [...dioderAccessories, new RainbowAccessory(log, dioderAccessories, api.hap)];
-    log.info("Dioder Platform finished initializing!");
+  constructor(public readonly log: Logging, public readonly config: PlatformConfig, public readonly api: API) {
+    this.log.debug('Finished initializing platform: Dioder');
+    this.api.on('didFinishLaunching', () => {
+      this.log.debug('Executed didFinishLaunching callback');
+      // DioderAccessories
+      const dioderAccessories = [];
+      for (const c of this.config.leds) {
+        const uuid = this.api.hap.uuid.generate(JSON.stringify(c));
+        const existingAccessory = this.accessories.find(accessory => accessory.UUID === uuid);
+        if (existingAccessory) {
+          this.log.info('Restoring existing accessory from cache:', existingAccessory.displayName);
+          dioderAccessories.push(new DioderAccessory(this.log, this.api.hap, existingAccessory));
+        } else {
+          this.log.info('Adding new accessory:', c.name);
+          const accessory = new this.api.platformAccessory(c.name, uuid);
+          accessory.context.config = c;
+          dioderAccessories.push(new DioderAccessory(this.log, this.api.hap, accessory));
+          this.api.registerPlatformAccessories('homebridge-dioder', 'Dioder', [accessory]);
+        }
+      }
+      // RainbowAccessory
+      const uuid = this.api.hap.uuid.generate("Rainbow Effect");
+      const existingAccessory = this.accessories.find(accessory => accessory.UUID === uuid);
+      if (existingAccessory) {
+        this.log.info('Restoring existing accessory from cache:', existingAccessory.displayName);
+        new RainbowAccessory(this.log, this.api.hap, existingAccessory, dioderAccessories);
+      } else {
+        this.log.info('Adding new accessory: Rainbow Effect');
+        const accessory = new this.api.platformAccessory("Rainbow Effect", uuid);
+        new RainbowAccessory(this.log, this.api.hap, accessory, dioderAccessories);
+        this.api.registerPlatformAccessories('homebridge-dioder', 'Dioder', [accessory]);
+      }
+    });
   }
 
-  accessories(callback: (foundAccessories: AccessoryPlugin[]) => void): void {
-    callback(this.accessPlugin);
+  configureAccessory(accessory: PlatformAccessory) {
+    this.log.info('Loading accessory from cache:', accessory.displayName);
+    this.accessories.push(accessory);
   }
 }
