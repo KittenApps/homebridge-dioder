@@ -1,8 +1,8 @@
 import type { AccessoryPlugin, HAP, CharacteristicValue, Logging, Service } from 'homebridge';
 import type { DioderAccessory } from './DioderAccessory';
 
-const INTERVAL = 20;
-const SPEED = 0.2;
+const INTERVAL = 1000 / 30; // 30 FPS
+const SPEED = 0.5;
 const OFFSET = 50;
 const SATURATION = 100;
 
@@ -54,11 +54,13 @@ export class RainbowAccessory implements AccessoryPlugin {
       this.interval = setInterval(() => this.runAnimation(), INTERVAL);
     } else {
       clearInterval(this.interval);
+      this.interval = undefined;
+      // restore previous LED state
     }
   }
 
   getOn(): boolean {
-    return this.on; // Intervall running
+    return this.on; // interval running
   }
 
   setBrightness(v: CharacteristicValue): void {
