@@ -27,15 +27,9 @@ export class DioderAccessory {
   constructor(private readonly log: Logging, hap: HAP, private readonly accessory: PlatformAccessory) {
     this.Characteristic = hap.Characteristic;
   
-    this.rPin = new Gpio(accessory.context.config.rPin, { mode: Gpio.OUTPUT });
-    this.gPin = new Gpio(accessory.context.config.gPin, { mode: Gpio.OUTPUT });
-    this.bPin = new Gpio(accessory.context.config.bPin, { mode: Gpio.OUTPUT });
-    this.rPin.pwmRange(PWM_RANGE);
-    this.gPin.pwmRange(PWM_RANGE);
-    this.bPin.pwmRange(PWM_RANGE);
-    this.rPin.pwmWrite(0);
-    this.gPin.pwmWrite(0);
-    this.bPin.pwmWrite(0);
+    this.rPin = new Gpio(accessory.context.config.rPin, { mode: Gpio.OUTPUT }).pwmRange(PWM_RANGE).pwmWrite(0);
+    this.gPin = new Gpio(accessory.context.config.gPin, { mode: Gpio.OUTPUT }).pwmRange(PWM_RANGE).pwmWrite(0);
+    this.bPin = new Gpio(accessory.context.config.bPin, { mode: Gpio.OUTPUT }).pwmRange(PWM_RANGE).pwmWrite(0);
     this.hsv = { h: 0, s: 0, v: 0};
     this.on = false;
     this.log.info("PWM frequency:", this.rPin.getPwmFrequency());
@@ -135,7 +129,7 @@ export class DioderAccessory {
       this.rPin.pwmWrite(Math.round(Math.pow(r / 255, GAMMA_COR) * (PWM_RANGE - MIN_PWM) + MIN_PWM));
       this.gPin.pwmWrite(Math.round(Math.pow(g / 255, GAMMA_COR) * (PWM_RANGE - MIN_PWM) + MIN_PWM));
       this.bPin.pwmWrite(Math.round(Math.pow(b / 255, GAMMA_COR) * (PWM_RANGE - MIN_PWM) + MIN_PWM));
-      this.log.info(`set ${this.accessory.displayName} RGB to ${r}, ${g}, ${b}`)
+      if (!t) this.log.info(`set ${this.accessory.displayName} RGB to ${r}, ${g}, ${b}`)
     } else {
       this.log.warn('Skipping color change while light bulb being off');
     }
