@@ -63,7 +63,7 @@ export class RainbowAccessory {
       this.FanService.updateCharacteristic(this.Characteristic.On, true);
       this.onS = true;
       if (this.getSpeed() === 0){
-        this.LEDservice.setCharacteristic(this.Characteristic.Brightness, 50);
+        this.FanService.setCharacteristic(this.Characteristic.RotationSpeed, 50);
       }
       this.interval = setInterval(() => this.runAnimation(), INTERVAL);
     } else {
@@ -84,7 +84,7 @@ export class RainbowAccessory {
     this.onS = on as boolean;
     if (on){
       if (this.getSpeed() === 0){
-        this.LEDservice.setCharacteristic(this.Characteristic.Brightness, 50);
+        this.FanService.setCharacteristic(this.Characteristic.RotationSpeed, 50);
       }
       this.interval = setInterval(() => this.runAnimation(), INTERVAL);
       this.LEDservice.updateCharacteristic(this.Characteristic.On, true);
