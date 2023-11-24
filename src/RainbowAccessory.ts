@@ -12,6 +12,7 @@ export class RainbowAccessory {
   private offset: number;
   private speed:number;
   private on: boolean;
+  private onS: boolean;
   private interval: NodeJS.Timeout | undefined;
 
   private readonly LEDservice: Service;
@@ -22,6 +23,7 @@ export class RainbowAccessory {
     this.Characteristic = hap.Characteristic;
 
     this.on = false;
+    this.onS = false;
     this.brightness = 0;
     this.offset = 50;
     this.speed = 0.5;
@@ -43,7 +45,7 @@ export class RainbowAccessory {
 
     this.FanService = this.accessory.getService(hap.Service.Fan) || this.accessory.addService(hap.Service.Fan);
     this.FanService.setCharacteristic(this.Characteristic.Name, "Rainbow Effect Speed");
-    this.FanService.getCharacteristic(this.Characteristic.On).onGet(this.getOn.bind(this)).onSet(this.setOn.bind(this));
+    this.FanService.getCharacteristic(this.Characteristic.On).onGet(this.getOnS.bind(this)).onSet(this.setOnS.bind(this));
     this.FanService.getCharacteristic(this.Characteristic.RotationSpeed).onGet(this.getSpeed.bind(this)).onSet(this.setSpeed.bind(this));
   }
 
@@ -59,16 +61,29 @@ export class RainbowAccessory {
         this.brightness = 100;
         this.LEDservice.setCharacteristic(this.Characteristic.Brightness, 100);
       }
-      this.interval = setInterval(() => this.runAnimation(), INTERVAL);
     } else {
-      clearInterval(this.interval);
-      this.interval = undefined;
+      this.FanService.setCharacteristic(this.Characteristic.On, false);
       // restore previous LED state
     }
   }
 
   getOn(): boolean {
-    return this.on; // interval running
+    return this.on;
+  }
+
+  setOnS(on: CharacteristicValue): void {
+    this.log.info("rainbow setOnS", on);
+    this.onS = on as boolean;
+    if (on){
+      this.interval = setInterval(() => this.runAnimation(), INTERVAL);
+    } else {
+      clearInterval(this.interval);
+      this.interval = undefined;
+    }
+  }
+
+  getOnS(): boolean {
+    return this.onS; // interval running
   }
 
   setBrightness(v: CharacteristicValue): void {
