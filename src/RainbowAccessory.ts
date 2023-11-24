@@ -2,7 +2,7 @@ import type { PlatformAccessory, CharacteristicValue, Service, Logging, HAP } fr
 import type { DioderAccessory } from './DioderAccessory';
 
 const INTERVAL = 1000 / 30; // 30 FPS
-const SPEED = 0.5;
+const SPEED = 100; // 1..100 => 0.01..1
 const OFFSET_CT = 5; // 140..500  => 28..100
 const SATURATION = 100;
 
@@ -10,10 +10,12 @@ export class RainbowAccessory {
   private brightness: number;
   private currentHue: number;
   private offset: number;
+  private speed:number;
   private on: boolean;
   private interval: NodeJS.Timeout | undefined;
 
   private readonly LEDservice: Service;
+  private readonly FanService: Service;
   private readonly Characteristic;
 
   constructor(private readonly log: Logging, hap: HAP, private readonly accessory: PlatformAccessory, private readonly leds: DioderAccessory[]) {
@@ -22,6 +24,7 @@ export class RainbowAccessory {
     this.on = false;
     this.brightness = 0;
     this.offset = 50;
+    this.speed = 0.5;
     this.currentHue = 0;
     this.interval = undefined;
 
@@ -34,10 +37,14 @@ export class RainbowAccessory {
 
     this.LEDservice = this.accessory.getService(hap.Service.Lightbulb) || this.accessory.addService(hap.Service.Lightbulb);
     this.LEDservice.setCharacteristic(this.Characteristic.Name, "Rainbow Effect");
-
     this.LEDservice.getCharacteristic(this.Characteristic.On).onGet(this.getOn.bind(this)).onSet(this.setOn.bind(this));
     this.LEDservice.getCharacteristic(this.Characteristic.Brightness).onGet(this.getBrightness.bind(this)).onSet(this.setBrightness.bind(this));
     this.LEDservice.getCharacteristic(this.Characteristic.ColorTemperature).onGet(this.getColorTemperature.bind(this)).onSet(this.setColorTemperature.bind(this));
+
+    this.FanService = this.accessory.getService(hap.Service.Fan) || this.accessory.addService(hap.Service.Fan);
+    this.FanService.setCharacteristic(this.Characteristic.Name, "Rainbow Effect Speed");
+    this.FanService.getCharacteristic(this.Characteristic.On).onGet(this.getOn.bind(this)).onSet(this.setOn.bind(this));
+    this.FanService.getCharacteristic(this.Characteristic.RotationSpeed).onGet(this.getSpeed.bind(this)).onSet(this.setSpeed.bind(this));
   }
 
   identify(): void {
@@ -82,8 +89,17 @@ export class RainbowAccessory {
     return this.offset * OFFSET_CT;
   }
 
+  setSpeed(v: CharacteristicValue): void {
+    this.log.info("rainbow speed", v);
+    this.speed = (v as number) / SPEED;
+  }
+
+  getSpeed(): number {
+    return this.speed * SPEED;
+  }
+
   runAnimation(): void {
-    this.log.warn(`currentHue: ${this.currentHue}, offset: ${this.offset}`);
+    this.log.warn(`currentHue: ${this.currentHue}, offset: ${this.offset}, speed: ${this.speed}`);
     for (let i = 0; i < this.leds.length; i++){
       this.leds[i].setHSV({
         h: (this.currentHue + i * this.offset) % 360,
@@ -91,6 +107,6 @@ export class RainbowAccessory {
         v: this.brightness
       }, true);
     }
-    this.currentHue = (this.currentHue + SPEED) % 360;
+    this.currentHue = (this.currentHue + this.speed) % 360;
   }
 }
