@@ -60,9 +60,17 @@ export class RainbowAccessory {
       if (this.getBrightness() === 0){
         this.LEDservice.setCharacteristic(this.Characteristic.Brightness, 100);
       }
-      this.FanService.setCharacteristic(this.Characteristic.On, true);
+      this.FanService.updateCharacteristic(this.Characteristic.On, true);
+      this.onS = true;
+      if (this.getSpeed() === 0){
+        this.LEDservice.setCharacteristic(this.Characteristic.Brightness, 50);
+      }
+      this.interval = setInterval(() => this.runAnimation(), INTERVAL);
     } else {
-      this.FanService.setCharacteristic(this.Characteristic.On, false);
+      this.FanService.updateCharacteristic(this.Characteristic.On, false);
+      this.onS = false;
+      clearInterval(this.interval);
+      this.interval = undefined;
       // restore previous LED state
     }
   }
@@ -79,7 +87,11 @@ export class RainbowAccessory {
         this.LEDservice.setCharacteristic(this.Characteristic.Brightness, 50);
       }
       this.interval = setInterval(() => this.runAnimation(), INTERVAL);
-      this.LEDservice.setCharacteristic(this.Characteristic.On, true);
+      this.LEDservice.updateCharacteristic(this.Characteristic.On, true);
+      this.on = true;
+      if (this.getBrightness() === 0){
+        this.LEDservice.setCharacteristic(this.Characteristic.Brightness, 100);
+      }
     } else {
       clearInterval(this.interval);
       this.interval = undefined;
