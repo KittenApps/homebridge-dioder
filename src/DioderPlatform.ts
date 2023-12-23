@@ -1,5 +1,6 @@
 import { DioderAccessory } from "./DioderAccessory";
 import { RainbowAccessory } from "./RainbowAccessory";
+import { GradientAccessory } from "./GradientAccessory";
 import type { PlatformAccessory, API, Logging, PlatformConfig, Service, Characteristic, DynamicPlatformPlugin } from "homebridge";
 
 export class DioderPlatform implements DynamicPlatformPlugin {
@@ -27,8 +28,8 @@ export class DioderPlatform implements DynamicPlatformPlugin {
         }
       }
       // RainbowAccessory
-      const uuid = this.api.hap.uuid.generate("Rainbow Effect");
-      const existingAccessory = this.accessories.find(accessory => accessory.UUID === uuid);
+      let uuid = this.api.hap.uuid.generate("Rainbow Effect");
+      let existingAccessory = this.accessories.find(accessory => accessory.UUID === uuid);
       if (existingAccessory) {
         this.log.info('Restoring existing accessory from cache:', existingAccessory.displayName);
         new RainbowAccessory(this, existingAccessory, dioderAccessories);
@@ -36,6 +37,19 @@ export class DioderPlatform implements DynamicPlatformPlugin {
         this.log.info('Adding new accessory: Rainbow Effect');
         const accessory = new this.api.platformAccessory("Rainbow Effect", uuid);
         new RainbowAccessory(this, accessory, dioderAccessories);
+        this.api.registerPlatformAccessories('homebridge-dioder', 'Dioder', [accessory]);
+      }
+      // GradientAccessory
+      uuid = this.api.hap.uuid.generate("Gradient Effect");
+      existingAccessory = this.accessories.find(accessory => accessory.UUID === uuid);
+      const colors = ['#0044ff', '#ff00b7', '#ffffff', '#ff00b7']
+      if (existingAccessory) {
+        this.log.info('Restoring existing accessory from cache:', existingAccessory.displayName);
+        new GradientAccessory(this, existingAccessory, dioderAccessories, colors);
+      } else {
+        this.log.info('Adding new accessory: Rainbow Effect');
+        const accessory = new this.api.platformAccessory("Gradient Effect", uuid);
+        new GradientAccessory(this, accessory, dioderAccessories, colors);
         this.api.registerPlatformAccessories('homebridge-dioder', 'Dioder', [accessory]);
       }
     });

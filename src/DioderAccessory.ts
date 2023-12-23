@@ -1,7 +1,7 @@
 import { Gpio } from 'pigpio';
 import { colord, HsvColor } from 'colord';
 
-import type { CharacteristicValue, PlatformAccessory, Service, Logging, HAP } from 'homebridge';
+import type { CharacteristicValue, PlatformAccessory, Service, Logging } from 'homebridge';
 import type { DioderPlatform } from './DioderPlatform';
 
 interface LedConfig {
@@ -148,6 +148,12 @@ export class DioderAccessory {
       g: Math.round(Math.pow((this.gPin.getPwmDutyCycle() - MIN_PWM) / (PWM_RANGE - MIN_PWM), 1 / GAMMA_COR) * 255),
       b: Math.round(Math.pow((this.bPin.getPwmDutyCycle() - MIN_PWM) / (PWM_RANGE - MIN_PWM), 1 / GAMMA_COR) * 255)
     }).toHsv();
+  }
+
+  setRGB(r: number, g: number, b: number) {
+    this.rPin.pwmWrite(Math.round(Math.pow(r / 255, GAMMA_COR) * (PWM_RANGE - MIN_PWM) + MIN_PWM));
+    this.gPin.pwmWrite(Math.round(Math.pow(g / 255, GAMMA_COR) * (PWM_RANGE - MIN_PWM) + MIN_PWM));
+    this.bPin.pwmWrite(Math.round(Math.pow(b / 255, GAMMA_COR) * (PWM_RANGE - MIN_PWM) + MIN_PWM));
   }
 
   turnOff(): void {
