@@ -10,6 +10,7 @@
         "type": "array",
         "items": {
           "type": "object",
+          "title": "next LED strip",
           "properties": {
             "name": {
               "title": "Name",
@@ -32,6 +33,40 @@
               "required": true
             }
           }
+        }
+      },
+      "gradientAnim": {
+          "title": "Gradient Animations",
+          "type": "array",
+          "items": {
+              "type": "object",
+              "title": "next Gradient Animation",
+              "properties": {
+                  "name": {
+                      "title": "Name",
+                      "type": "string",
+                      "required": true
+                  },
+                  "colors": {
+                      "title": "Colors",
+                      "type": "array",
+                      "minItems": 2,
+                      "items": {
+                          "type": "string"
+                      }
+                  }
+              }
+          }
+      }
+      ,
+      "rainbowAnim": {
+        "title": "Rainbow Animation",
+        "type": "object",
+        "properties": {
+            "enabled": {
+                "title": "enable Rainbow Animation",
+                "type": "boolean"
+            }
         }
       }
     }

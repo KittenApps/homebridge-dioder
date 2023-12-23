@@ -19,7 +19,7 @@ export class AnimatedAccessory {
   private readonly Characteristic;
   public readonly log: Logging;
 
-  constructor(private readonly platform: DioderPlatform, private readonly accessory: PlatformAccessory, public readonly leds: DioderAccessory[]) {
+  constructor(private readonly platform: DioderPlatform, private readonly accessory: PlatformAccessory, public readonly leds: DioderAccessory[], name: string) {
     const hap = this.platform.api.hap;
     this.Characteristic = hap.Characteristic;
     this.log = this.platform.log;
@@ -39,13 +39,13 @@ export class AnimatedAccessory {
     this.accessory.on('identify', () => this.identify());
 
     this.LEDservice = this.accessory.getService(hap.Service.Lightbulb) || this.accessory.addService(hap.Service.Lightbulb);
-    this.LEDservice.setCharacteristic(this.Characteristic.Name, "Rainbow Effect");
+    this.LEDservice.setCharacteristic(this.Characteristic.Name, name);
     this.LEDservice.getCharacteristic(this.Characteristic.On).onGet(this.getOn.bind(this)).onSet(this.setOn.bind(this));
     this.LEDservice.getCharacteristic(this.Characteristic.Brightness).onGet(this.getBrightness.bind(this)).onSet(this.setBrightness.bind(this));
     this.LEDservice.getCharacteristic(this.Characteristic.ColorTemperature).onGet(this.getColorTemperature.bind(this)).onSet(this.setColorTemperature.bind(this));
 
     this.FanService = this.accessory.getService(hap.Service.Fan) || this.accessory.addService(hap.Service.Fan);
-    this.FanService.setCharacteristic(this.Characteristic.Name, "Rainbow Effect Speed");
+    this.FanService.setCharacteristic(this.Characteristic.Name, `${name} Speed`);
     this.FanService.getCharacteristic(this.Characteristic.On).onGet(this.getOnS.bind(this)).onSet(this.setOnS.bind(this));
     this.FanService.getCharacteristic(this.Characteristic.RotationSpeed).onGet(this.getSpeed.bind(this)).onSet(this.setSpeed.bind(this));
   }
@@ -55,7 +55,7 @@ export class AnimatedAccessory {
   }
   
   setOn(on: CharacteristicValue): void {
-    this.log.info("rainbow setOn", on);
+    this.log.info(`rainbow setOn`, on);
     this.on = on as boolean;
     if (on){
       if (this.getBrightness() === 0){

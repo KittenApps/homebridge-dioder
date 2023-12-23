@@ -9,10 +9,10 @@ export class GradientAccessory extends AnimatedAccessory {
   private currentStep: number;
   private colors: RgbColor[];
 
-  constructor(platform: DioderPlatform, accessory: PlatformAccessory, leds: DioderAccessory[], colors: string[]) {
-    super(platform, accessory, leds);
+  constructor(platform: DioderPlatform, accessory: PlatformAccessory, leds: DioderAccessory[]) {
+    super(platform, accessory, leds, accessory.context.config.name);
     this.currentStep = 0;
-    this.colors = colors.map(c => colord(c).toRgb());
+    this.colors = accessory.context.config.colors.map((c: string) => colord(c).toRgb());
   }
 
   runAnimation(): void {

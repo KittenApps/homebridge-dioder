@@ -9,7 +9,7 @@ export class RainbowAccessory extends AnimatedAccessory {
   private currentHue: number;
 
   constructor(platform: DioderPlatform, accessory: PlatformAccessory, leds: DioderAccessory[]) {
-    super(platform, accessory, leds);
+    super(platform, accessory, leds, 'Rainbow Effect');
     this.currentHue = 0;
   }
 

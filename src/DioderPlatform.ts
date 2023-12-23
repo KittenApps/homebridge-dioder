@@ -28,29 +28,33 @@ export class DioderPlatform implements DynamicPlatformPlugin {
         }
       }
       // RainbowAccessory
-      let uuid = this.api.hap.uuid.generate("Rainbow Effect");
-      let existingAccessory = this.accessories.find(accessory => accessory.UUID === uuid);
-      if (existingAccessory) {
-        this.log.info('Restoring existing accessory from cache:', existingAccessory.displayName);
-        new RainbowAccessory(this, existingAccessory, dioderAccessories);
-      } else {
-        this.log.info('Adding new accessory: Rainbow Effect');
-        const accessory = new this.api.platformAccessory("Rainbow Effect", uuid);
-        new RainbowAccessory(this, accessory, dioderAccessories);
-        this.api.registerPlatformAccessories('homebridge-dioder', 'Dioder', [accessory]);
+      if (this.config.rainbowAnim.enabled) {
+        let uuid = this.api.hap.uuid.generate("Rainbow Effect");
+        let existingAccessory = this.accessories.find(accessory => accessory.UUID === uuid);
+        if (existingAccessory) {
+          this.log.info('Restoring existing accessory from cache:', existingAccessory.displayName);
+          new RainbowAccessory(this, existingAccessory, dioderAccessories);
+        } else {
+          this.log.info('Adding new accessory: Rainbow Effect');
+          const accessory = new this.api.platformAccessory("Rainbow Effect", uuid);
+          new RainbowAccessory(this, accessory, dioderAccessories);
+          this.api.registerPlatformAccessories('homebridge-dioder', 'Dioder', [accessory]);
+        }
       }
       // GradientAccessory
-      uuid = this.api.hap.uuid.generate("Gradient Effect");
-      existingAccessory = this.accessories.find(accessory => accessory.UUID === uuid);
-      const colors = ['#0044ff', '#ff00b7', '#ffffff', '#ff00b7']
-      if (existingAccessory) {
-        this.log.info('Restoring existing accessory from cache:', existingAccessory.displayName);
-        new GradientAccessory(this, existingAccessory, dioderAccessories, colors);
-      } else {
-        this.log.info('Adding new accessory: Rainbow Effect');
-        const accessory = new this.api.platformAccessory("Gradient Effect", uuid);
-        new GradientAccessory(this, accessory, dioderAccessories, colors);
-        this.api.registerPlatformAccessories('homebridge-dioder', 'Dioder', [accessory]);
+        for (const c of this.config.gradientAnim) {
+        const uuid = this.api.hap.uuid.generate(JSON.stringify(c));
+        const existingAccessory = this.accessories.find(accessory => accessory.UUID === uuid);
+        if (existingAccessory) {
+          this.log.info('Restoring existing accessory from cache:', existingAccessory.displayName);
+          new GradientAccessory(this, existingAccessory, dioderAccessories);
+        } else {
+          this.log.info('Adding new gradient accessory:', c.name);
+          const accessory = new this.api.platformAccessory(c.name, uuid);
+          accessory.context.config = c;
+          new GradientAccessory(this, accessory, dioderAccessories);
+          this.api.registerPlatformAccessories('homebridge-dioder', 'Dioder', [accessory]);
+        }
       }
     });
   }
