@@ -1,5 +1,6 @@
 import type { PlatformAccessory, CharacteristicValue, Service, Logging, HAP } from 'homebridge';
 import type { DioderAccessory } from './DioderAccessory';
+import type { DioderPlatform } from './DioderPlatform';
 
 const INTERVAL = 1000 / 30; // 30 FPS
 const SPEED = 100; // 1..100 => 0.01..1
@@ -18,9 +19,12 @@ export class RainbowAccessory {
   private readonly LEDservice: Service;
   private readonly FanService: Service;
   private readonly Characteristic;
+  private readonly log: Logging;
 
-  constructor(private readonly log: Logging, hap: HAP, private readonly accessory: PlatformAccessory, private readonly leds: DioderAccessory[]) {
+  constructor(private readonly platform: DioderPlatform, private readonly accessory: PlatformAccessory, private readonly leds: DioderAccessory[]) {
+    const hap = this.platform.api.hap;
     this.Characteristic = hap.Characteristic;
+    this.log = this.platform.log;
 
     this.on = false;
     this.onS = false;
@@ -66,12 +70,14 @@ export class RainbowAccessory {
         this.FanService.setCharacteristic(this.Characteristic.RotationSpeed, 50);
       }
       this.interval = setInterval(() => this.runAnimation(), INTERVAL);
+      this.platform.setAnimationCancel(this.cancelAnimation);
     } else {
       this.FanService.updateCharacteristic(this.Characteristic.On, false);
       this.onS = false;
       clearInterval(this.interval);
       this.interval = undefined;
-      // restore previous LED state
+      // shut down LED states too
+      for (const led of this.leds) led.setHSV({ h: 0, s: 0, v: 0 });
     }
   }
 
@@ -92,6 +98,7 @@ export class RainbowAccessory {
       if (this.getBrightness() === 0){
         this.LEDservice.setCharacteristic(this.Characteristic.Brightness, 100);
       }
+      this.platform.setAnimationCancel(this.cancelAnimation);
     } else {
       clearInterval(this.interval);
       this.interval = undefined;
@@ -139,5 +146,12 @@ export class RainbowAccessory {
       }, true);
     }
     this.currentHue = (this.currentHue + this.speed) % 360;
+  }
+
+  cancelAnimation() : void {
+    clearInterval(this.interval);
+    this.interval = undefined;
+    this.LEDservice.updateCharacteristic(this.Characteristic.On, false);
+    this.FanService.updateCharacteristic(this.Characteristic.On, false);
   }
 }

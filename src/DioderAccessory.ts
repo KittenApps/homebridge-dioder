@@ -2,6 +2,7 @@ import { Gpio } from 'pigpio';
 import { colord, HsvColor } from 'colord';
 
 import type { CharacteristicValue, PlatformAccessory, Service, Logging, HAP } from 'homebridge';
+import type { DioderPlatform } from './DioderPlatform';
 
 interface LedConfig {
   name: string;
@@ -23,9 +24,12 @@ export class DioderAccessory {
 
   private readonly LEDservice: Service;
   private readonly Characteristic;
+  private readonly log: Logging;
 
-  constructor(private readonly log: Logging, hap: HAP, private readonly accessory: PlatformAccessory) {
+  constructor(private readonly platform: DioderPlatform, private readonly accessory: PlatformAccessory) {
+    const hap = platform.api.hap;
     this.Characteristic = hap.Characteristic;
+    this.log = platform.log;
   
     this.rPin = new Gpio(accessory.context.config.rPin, { mode: Gpio.OUTPUT }).pwmRange(PWM_RANGE).pwmWrite(0);
     this.gPin = new Gpio(accessory.context.config.gPin, { mode: Gpio.OUTPUT }).pwmRange(PWM_RANGE).pwmWrite(0);
@@ -76,6 +80,7 @@ export class DioderAccessory {
     this.log.info("setOn", on);
     this.on = on as boolean;
     if (on){
+      this.platform.stopAnimation();
       if (this.getBrightness() === 0){
         this.hsv.v = 100;
         this.LEDservice.setCharacteristic(this.Characteristic.Brightness, 100);
@@ -90,6 +95,7 @@ export class DioderAccessory {
   }
 
   getOn(): boolean {
+    if (this.platform.isAnimationRunning()) return false;
     return this.rPin.getPwmDutyCycle() >= MIN_PWM || this.gPin.getPwmDutyCycle() >= MIN_PWM || this.bPin.getPwmDutyCycle() >= MIN_PWM;
   }
 
