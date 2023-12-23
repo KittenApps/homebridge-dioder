@@ -137,7 +137,7 @@ export class RainbowAccessory {
   }
 
   runAnimation(): void {
-    this.log.warn(`currentHue: ${this.currentHue}, offset: ${this.offset}, speed: ${this.speed}`);
+    //this.log.warn(`currentHue: ${this.currentHue}, offset: ${this.offset}, speed: ${this.speed}`);
     for (let i = 0; i < this.leds.length; i++){
       this.leds[i].setHSV({
         h: (this.currentHue + i * this.offset) % 360,
