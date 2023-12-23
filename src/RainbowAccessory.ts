@@ -70,7 +70,7 @@ export class RainbowAccessory {
         this.FanService.setCharacteristic(this.Characteristic.RotationSpeed, 50);
       }
       this.interval = setInterval(() => this.runAnimation(), INTERVAL);
-      this.platform.setAnimationCancel(this.cancelAnimation);
+      this.platform.setAnimationCancel(this.cancelAnimation.bind(this));
     } else {
       this.FanService.updateCharacteristic(this.Characteristic.On, false);
       this.onS = false;
@@ -97,7 +97,7 @@ export class RainbowAccessory {
       if (this.getBrightness() === 0){
         this.LEDservice.setCharacteristic(this.Characteristic.Brightness, 100);
       }
-      this.platform.setAnimationCancel(this.cancelAnimation);
+      this.platform.setAnimationCancel(this.cancelAnimation.bind(this));
     } else {
       clearInterval(this.interval);
       this.interval = undefined;
