@@ -47,18 +47,18 @@ export class DioderPlatform implements DynamicPlatformPlugin {
   }
 
   setAnimationCancel(callback: Function): void {
-    if (this.setAnimationCancel !== undefined){
+    if (this.animationCancel !== undefined){
       (this.animationCancel as Function)();
     }
     this.animationCancel = callback;
   }
 
   isAnimationRunning(): boolean {
-    return this.setAnimationCancel !== undefined;
+    return this.animationCancel !== undefined;
   }
 
   stopAnimation(): void {
-    if (this.setAnimationCancel !== undefined){
+    if (this.animationCancel !== undefined){
       (this.animationCancel as Function)();
       this.animationCancel = undefined;
     }
