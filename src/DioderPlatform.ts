@@ -11,12 +11,14 @@ export class DioderPlatform implements DynamicPlatformPlugin {
     this.log.debug('Finished initializing platform: Dioder');
     this.api.on('didFinishLaunching', () => {
       this.log.debug('Executed didFinishLaunching callback');
+      let removedAccessories = this.accessories;
       // DioderAccessories
       const dioderAccessories = [];
-      for (const c of this.config.leds) {
+      for (const c of (this.config.leds || [])) {
         const uuid = this.api.hap.uuid.generate(JSON.stringify(c));
         const existingAccessory = this.accessories.find(accessory => accessory.UUID === uuid);
         if (existingAccessory) {
+          removedAccessories = removedAccessories.filter(accessory => accessory.UUID !== uuid);
           this.log.info('Restoring existing accessory from cache:', existingAccessory.displayName);
           dioderAccessories.push(new DioderAccessory(this, existingAccessory));
         } else {
@@ -28,10 +30,11 @@ export class DioderPlatform implements DynamicPlatformPlugin {
         }
       }
       // RainbowAccessory
-      if (this.config.rainbowAnim.enabled) {
+      if (this.config.rainbowAnim?.enabled) {
         let uuid = this.api.hap.uuid.generate("Rainbow Effect");
         let existingAccessory = this.accessories.find(accessory => accessory.UUID === uuid);
         if (existingAccessory) {
+          removedAccessories = removedAccessories.filter(accessory => accessory.UUID !== uuid);
           this.log.info('Restoring existing accessory from cache:', existingAccessory.displayName);
           new RainbowAccessory(this, existingAccessory, dioderAccessories);
         } else {
@@ -42,10 +45,11 @@ export class DioderPlatform implements DynamicPlatformPlugin {
         }
       }
       // GradientAccessory
-        for (const c of this.config.gradientAnim) {
+      for (const c of (this.config.gradientAnim || [])) {
         const uuid = this.api.hap.uuid.generate(JSON.stringify(c));
         const existingAccessory = this.accessories.find(accessory => accessory.UUID === uuid);
         if (existingAccessory) {
+          removedAccessories = removedAccessories.filter(accessory => accessory.UUID !== uuid);
           this.log.info('Restoring existing accessory from cache:', existingAccessory.displayName);
           new GradientAccessory(this, existingAccessory, dioderAccessories);
         } else {
@@ -55,6 +59,11 @@ export class DioderPlatform implements DynamicPlatformPlugin {
           new GradientAccessory(this, accessory, dioderAccessories);
           this.api.registerPlatformAccessories('homebridge-dioder', 'Dioder', [accessory]);
         }
+      }
+      // removed unused Accessories
+      if (removedAccessories.length > 0) {
+        this.log.warn('removing unused accessories', removedAccessories.map(a => a.displayName));
+        this.api.unregisterPlatformAccessories('homebridge-dioder', 'Dioder', removedAccessories);
       }
     });
   }
