@@ -76,8 +76,7 @@ export class RainbowAccessory {
       this.onS = false;
       clearInterval(this.interval);
       this.interval = undefined;
-      // shut down LED states too
-      for (const led of this.leds) led.setHSV({ h: 0, s: 0, v: 0 });
+      for (const led of this.leds) led.turnOff();
     }
   }
 

@@ -149,4 +149,10 @@ export class DioderAccessory {
       b: Math.round(Math.pow((this.bPin.getPwmDutyCycle() - MIN_PWM) / (PWM_RANGE - MIN_PWM), 1 / GAMMA_COR) * 255)
     }).toHsv();
   }
+
+  turnOff(): void {
+    this.rPin.pwmWrite(0);
+    this.gPin.pwmWrite(0);
+    this.bPin.pwmWrite(0);
+  }
 }
