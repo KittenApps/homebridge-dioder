@@ -28,8 +28,8 @@
     "pigpio": "^3.3.1"
   },
   "devDependencies": {
-    "@types/node": "^20.11.18",
+    "@types/node": "^20.11.30",
     "homebridge": "^1.7.0",
-    "typescript": "^5.3.3"
+    "typescript": "^5.4.3"
   }
 }
