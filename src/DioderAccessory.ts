@@ -68,9 +68,9 @@ export default class DioderAccessory {
   }
 
   pwm(r: number, g: number, b: number): void {
-    lg.txPwm(this.gpiochip, this.config.rPin, PWM_FREQUENCY, r === 0 ? 0 : (r / 255) ** GAMMA_COR * (100 - MIN_PWM) + MIN_PWM, 0, 0);
-    lg.txPwm(this.gpiochip, this.config.gPin, PWM_FREQUENCY, g === 0 ? 0 : (g / 255) ** GAMMA_COR * (100 - MIN_PWM) + MIN_PWM, 0, 0);
-    lg.txPwm(this.gpiochip, this.config.bPin, PWM_FREQUENCY, b === 0 ? 0 : (b / 255) ** GAMMA_COR * (100 - MIN_PWM) + MIN_PWM, 0, 0);
+    lg.txPwm(this.gpiochip, this.config.rPin, this.config.freq ?? PWM_FREQUENCY, r === 0 ? 0 : (r / 255) ** GAMMA_COR * (100 - MIN_PWM) + MIN_PWM, 0, 0);
+    lg.txPwm(this.gpiochip, this.config.gPin, this.config.freq ?? PWM_FREQUENCY, g === 0 ? 0 : (g / 255) ** GAMMA_COR * (100 - MIN_PWM) + MIN_PWM, 0, 0);
+    lg.txPwm(this.gpiochip, this.config.bPin, this.config.freq ?? PWM_FREQUENCY, b === 0 ? 0 : (b / 255) ** GAMMA_COR * (100 - MIN_PWM) + MIN_PWM, 0, 0);
   }
 
   setOn(on: CharacteristicValue): void {
@@ -138,11 +138,6 @@ export default class DioderAccessory {
 
   getHSV(): HsvColor {
     return this.hsv;
-  }
-
-  setRGB(r: number, g: number, b: number): void {
-    this.pwm(r, g, b);
-    this.hsv = colord({ r, g, b }).toHsv();
   }
 
   turnOff(): void {

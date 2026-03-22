@@ -15,7 +15,8 @@
             "name": { "title": "Name", "type": "string", "required": true },
             "rPin": { "title": "rPin", "type": "integer", "required": true },
             "gPin": { "title": "gPin", "type": "integer", "required": true },
-            "bPin": { "title": "bPin", "type": "integer", "required": true }
+            "bPin": { "title": "bPin", "type": "integer", "required": true },
+            "freq": { "title": "freq", "type": "integer", "minimum": 0.1, "maximum": 10000 }
           }
         }
       },

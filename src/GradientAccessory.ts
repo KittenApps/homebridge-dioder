@@ -26,7 +26,7 @@ export default class GradientAccessory extends AnimatedAccessory {
       const r = this.colors[prevColor].r * (1 - prog) + this.colors[nextColor].r * prog;
       const g = this.colors[prevColor].g * (1 - prog) + this.colors[nextColor].g * prog;
       const b = this.colors[prevColor].b * (1 - prog) + this.colors[nextColor].b * prog;
-      this.leds[i].setRGB((r * this.brightness) / 100, (g * this.brightness) / 100, (b * this.brightness) / 100);
+      this.leds[i].pwm((r * this.brightness) / 100, (g * this.brightness) / 100, (b * this.brightness) / 100);
     }
     this.currentStep = (this.currentStep + (this.speed * len) / 360) % len;
   }

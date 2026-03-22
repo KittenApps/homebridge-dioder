@@ -10,6 +10,7 @@ export interface LedConfig {
   rPin: number;
   gPin: number;
   bPin: number;
+  freq: number;
 }
 
 interface GradiantConfig {
@@ -45,7 +46,6 @@ export default class DioderPlatform implements DynamicPlatformPlugin {
     this.log.debug('Finished initializing platform: Dioder');
     this.api.on('didFinishLaunching', () => {
       this.log.debug('Executed didFinishLaunching callback');
-      let removedAccessories = this.accessories;
       // DioderAccessories
       const dioderAccessories: DioderAccessory[] = [];
       const gpiochip = lg.gpiochipOpen(0);
@@ -53,7 +53,6 @@ export default class DioderPlatform implements DynamicPlatformPlugin {
         const uuid = this.api.hap.uuid.generate(JSON.stringify(c));
         const existingAccessory = this.accessories.find(accessory => accessory.UUID === uuid) as PlatformAccessory<DioderContext>;
         if (existingAccessory) {
-          removedAccessories = removedAccessories.filter(accessory => accessory.UUID !== uuid);
           this.log.info('Restoring existing accessory from cache:', existingAccessory.displayName);
           dioderAccessories.push(new DioderAccessory(this, existingAccessory, gpiochip));
         } else {
@@ -69,7 +68,6 @@ export default class DioderPlatform implements DynamicPlatformPlugin {
         const uuid = this.api.hap.uuid.generate('Rainbow Effect');
         const existingAccessory = this.accessories.find(accessory => accessory.UUID === uuid);
         if (existingAccessory) {
-          removedAccessories = removedAccessories.filter(accessory => accessory.UUID !== uuid);
           this.log.info('Restoring existing accessory from cache:', existingAccessory.displayName);
           // oxlint-disable-next-line no-new
           new RainbowAccessory(this, existingAccessory, dioderAccessories);
@@ -86,7 +84,6 @@ export default class DioderPlatform implements DynamicPlatformPlugin {
         const uuid = this.api.hap.uuid.generate(JSON.stringify(c));
         const existingAccessory = this.accessories.find(accessory => accessory.UUID === uuid) as PlatformAccessory<GradiantContext>;
         if (existingAccessory) {
-          removedAccessories = removedAccessories.filter(accessory => accessory.UUID !== uuid);
           this.log.info('Restoring existing accessory from cache:', existingAccessory.displayName);
           // oxlint-disable-next-line no-new
           new GradientAccessory(this, existingAccessory, dioderAccessories);
@@ -98,14 +95,6 @@ export default class DioderPlatform implements DynamicPlatformPlugin {
           new GradientAccessory(this, accessory, dioderAccessories);
           this.api.registerPlatformAccessories(PLUGIN_NAME, 'Dioder', [accessory]);
         }
-      }
-      // removed unused Accessories
-      if (removedAccessories.length > 0) {
-        this.log.warn(
-          'removing unused accessories',
-          removedAccessories.map(a => a.displayName)
-        );
-        this.api.unregisterPlatformAccessories(PLUGIN_NAME, 'Dioder', removedAccessories);
       }
     });
   }
