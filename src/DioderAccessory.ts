@@ -2,44 +2,28 @@ import { colord, HsvColor } from 'colord';
 
 import type { CharacteristicValue, PlatformAccessory, Service, Logging } from 'homebridge';
 import type { DioderPlatform } from './DioderPlatform';
-import { type Rgpio } from 'hb-rpi-tools/GpioClient/Rgpio';
-
-interface LedConfig {
-  name: string;
-  rPin: number;
-  gPin: number;
-  bPin: number;
-}
+import { txPwm } from 'lgpio';
 
 const MIN_PWM = 31.4995 / 8000; // min pwm to get actually light from dioder, depends on PWM_RANGE
 const GAMMA_COR = 2.8;
 
 export class DioderAccessory {
-  private readonly rPin: number;
-  private readonly gPin: number;
-  private readonly bPin: number;
   private hsv: HsvColor;
   private on: boolean;
 
   private readonly LEDservice: Service;
   private readonly Characteristic;
   private readonly log: Logging;
+  private readonly config: { name: string; rPin: number; gPin: number; bPin: number; };
 
-  constructor(private readonly platform: DioderPlatform, private readonly accessory: PlatformAccessory, private readonly rgpio: Rgpio) {
+  constructor(private readonly platform: DioderPlatform, private readonly accessory: PlatformAccessory, private readonly gpiochip: number) {
     const hap = platform.api.hap;
     this.Characteristic = hap.Characteristic;
     this.log = platform.log;
-    this.rgpio = rgpio;
-  
-    this.rPin = accessory.context.config.rPin;
-    this.rgpio.setPwm(this.rPin);
-    this.rgpio.writePwm(this.rPin, 0);
-    this.gPin = accessory.context.config.gPin;
-    this.rgpio.setPwm(this.gPin);
-    this.rgpio.writePwm(this.gPin, 0);
-    this.bPin = accessory.context.config.bPin;
-    this.rgpio.setPwm(this.bPin);
-    this.rgpio.writePwm(this.bPin, 0);
+    this.gpiochip = gpiochip;
+    
+    this.config = accessory.context.config;
+    this.pwm(0, 0, 0);
     this.hsv = { h: 0, s: 0, v: 0};
     this.on = false;
 
@@ -51,7 +35,7 @@ export class DioderAccessory {
     this.accessory.on('identify', () => this.identify());
 
     this.LEDservice = this.accessory.getService(hap.Service.Lightbulb) || this.accessory.addService(hap.Service.Lightbulb);
-    this.LEDservice.setCharacteristic(this.Characteristic.Name, accessory.context.config.name);
+    this.LEDservice.setCharacteristic(this.Characteristic.Name, this.config.name);
 
     this.LEDservice.getCharacteristic(this.Characteristic.On).onGet(this.getOn.bind(this)).onSet(this.setOn.bind(this));
     this.LEDservice.getCharacteristic(this.Characteristic.Brightness).onGet(this.getBrightness.bind(this)).onSet(this.setBrightness.bind(this));
@@ -60,17 +44,11 @@ export class DioderAccessory {
   }
 
   identify(): void {
-    this.rgpio.writePwm(this.rPin, 0);
-    this.rgpio.writePwm(this.gPin, 0);
-    this.rgpio.writePwm(this.bPin, 0);
+    this.pwm(0, 0, 0);
     setTimeout(() => {
-      this.rgpio.writePwm(this.rPin, 1);
-      this.rgpio.writePwm(this.gPin, 0);
-      this.rgpio.writePwm(this.bPin, 0);
+      this.pwm(1, 0, 0);
       setTimeout(() => {
-        this.rgpio.writePwm(this.rPin, 0);
-        this.rgpio.writePwm(this.gPin, 0);
-        this.rgpio.writePwm(this.bPin, 0);
+        this.pwm(0, 0, 0);
         if (this.getBrightness() > 0){
           setTimeout(() => {
             this.setHSV(this.hsv);
@@ -79,6 +57,12 @@ export class DioderAccessory {
       }, 3000);
     }, 1000);
     this.log.info("Identify!");
+  }
+
+  pwm(r: number, b: number, g: number): void {
+    txPwm(this.gpiochip, this.config.rPin, 8000, r, 0, 0);
+    txPwm(this.gpiochip, this.config.gPin, 8000, g, 0, 0);
+    txPwm(this.gpiochip, this.config.bPin, 8000, b, 0, 0);
   }
   
   setOn(on: CharacteristicValue): void {
@@ -93,9 +77,7 @@ export class DioderAccessory {
         this.setHSV(this.hsv);
       }
     } else {
-      this.rgpio.writePwm(this.rPin, 0);
-      this.rgpio.writePwm(this.gPin, 0);
-      this.rgpio.writePwm(this.bPin, 0);
+      this.pwm(0, 0, 0);
     }
   }
 
@@ -137,9 +119,11 @@ export class DioderAccessory {
   setHSV(c: HsvColor, t?: boolean): void {
     if (t || (this.on && this.getBrightness() > 0)) {
       const { r, g, b } = colord(c).toRgb();
-      this.rgpio.writePwm(this.rPin, Math.round(Math.pow(r / 255, GAMMA_COR) * (1 - MIN_PWM) + MIN_PWM));
-      this.rgpio.writePwm(this.gPin, Math.round(Math.pow(g / 255, GAMMA_COR) * (1 - MIN_PWM) + MIN_PWM));
-      this.rgpio.writePwm(this.bPin, Math.round(Math.pow(b / 255, GAMMA_COR) * (1 - MIN_PWM) + MIN_PWM));
+      this.pwm(
+        Math.round(Math.pow(r / 255, GAMMA_COR) * (1 - MIN_PWM) + MIN_PWM),
+        Math.round(Math.pow(g / 255, GAMMA_COR) * (1 - MIN_PWM) + MIN_PWM),
+        Math.round(Math.pow(b / 255, GAMMA_COR) * (1 - MIN_PWM) + MIN_PWM)
+      );
       if (!t) this.log.info(`set ${this.accessory.displayName} RGB to ${r}, ${g}, ${b}`)
     } else {
       this.log.warn('Skipping color change while light bulb being off');
@@ -152,14 +136,14 @@ export class DioderAccessory {
   }
 
   setRGB(r: number, g: number, b: number) {
-    this.rgpio.writePwm(this.rPin, Math.round(Math.pow(r / 255, GAMMA_COR) * (1 - MIN_PWM) + MIN_PWM));
-    this.rgpio.writePwm(this.gPin, Math.round(Math.pow(g / 255, GAMMA_COR) * (1 - MIN_PWM) + MIN_PWM));
-    this.rgpio.writePwm(this.bPin, Math.round(Math.pow(b / 255, GAMMA_COR) * (1 - MIN_PWM) + MIN_PWM));
+    this.pwm(
+      Math.round(Math.pow(r / 255, GAMMA_COR) * (1 - MIN_PWM) + MIN_PWM),
+      Math.round(Math.pow(g / 255, GAMMA_COR) * (1 - MIN_PWM) + MIN_PWM),
+      Math.round(Math.pow(b / 255, GAMMA_COR) * (1 - MIN_PWM) + MIN_PWM)
+    );
   }
 
   turnOff(): void {
-    this.rgpio.writePwm(this.rPin, 0);
-    this.rgpio.writePwm(this.gPin, 0);
-    this.rgpio.writePwm(this.bPin, 0);
+    this.pwm(0, 0, 0);
   }
 }
