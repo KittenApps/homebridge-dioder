@@ -5,7 +5,8 @@ import lg from 'lgpio';
 import type DioderPlatform from './DioderPlatform';
 import type { DioderContext, LedConfig } from './DioderPlatform';
 
-const MIN_PWM = 31.4995 / 8000; // min pwm to get actually light from dioder, depends on PWM_RANGE
+const MIN_PWM = 0.5; // min pwm to get actually light from dioder, depends on PWM_RANGE
+const PWM_FREQUENCY = 10000;
 const GAMMA_COR = 2.8;
 
 export default class DioderAccessory {
@@ -66,10 +67,10 @@ export default class DioderAccessory {
     this.log.info('Identify!');
   }
 
-  pwm(r: number, b: number, g: number): void {
-    lg.txPwm(this.gpiochip, this.config.rPin, 8000, r, 0, 0);
-    lg.txPwm(this.gpiochip, this.config.gPin, 8000, g, 0, 0);
-    lg.txPwm(this.gpiochip, this.config.bPin, 8000, b, 0, 0);
+  pwm(r: number, g: number, b: number): void {
+    lg.txPwm(this.gpiochip, this.config.rPin, PWM_FREQUENCY, r, 0, 0);
+    lg.txPwm(this.gpiochip, this.config.gPin, PWM_FREQUENCY, g, 0, 0);
+    lg.txPwm(this.gpiochip, this.config.bPin, PWM_FREQUENCY, b, 0, 0);
   }
 
   setOn(on: CharacteristicValue): void {
@@ -127,9 +128,9 @@ export default class DioderAccessory {
     if (t || (this.on && this.getBrightness() > 0)) {
       const { r, g, b } = colord(c).toRgb();
       this.pwm(
-        Math.round((r / 255) ** GAMMA_COR * (1 - MIN_PWM) + MIN_PWM),
-        Math.round((g / 255) ** GAMMA_COR * (1 - MIN_PWM) + MIN_PWM),
-        Math.round((b / 255) ** GAMMA_COR * (1 - MIN_PWM) + MIN_PWM)
+        Math.round((r / 255) ** GAMMA_COR * (100 - MIN_PWM) + MIN_PWM),
+        Math.round((g / 255) ** GAMMA_COR * (100 - MIN_PWM) + MIN_PWM),
+        Math.round((b / 255) ** GAMMA_COR * (100 - MIN_PWM) + MIN_PWM)
       );
       if (!t) this.log.info(`set ${this.accessory.displayName} RGB to ${r}, ${g}, ${b}`);
     } else {
@@ -143,9 +144,9 @@ export default class DioderAccessory {
 
   setRGB(r: number, g: number, b: number): void {
     this.pwm(
-      Math.round((r / 255) ** GAMMA_COR * (1 - MIN_PWM) + MIN_PWM),
-      Math.round((g / 255) ** GAMMA_COR * (1 - MIN_PWM) + MIN_PWM),
-      Math.round((b / 255) ** GAMMA_COR * (1 - MIN_PWM) + MIN_PWM)
+      Math.round((r / 255) ** GAMMA_COR * (100 - MIN_PWM) + MIN_PWM),
+      Math.round((g / 255) ** GAMMA_COR * (100 - MIN_PWM) + MIN_PWM),
+      Math.round((b / 255) ** GAMMA_COR * (100 - MIN_PWM) + MIN_PWM)
     );
   }
 
