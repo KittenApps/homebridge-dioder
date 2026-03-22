@@ -54,7 +54,7 @@ export default class DioderAccessory {
   identify(): void {
     this.pwm(0, 0, 0);
     setTimeout(() => {
-      this.pwm(1, 0, 0);
+      this.pwm(255, 0, 0);
       setTimeout(() => {
         this.pwm(0, 0, 0);
         if (this.getBrightness() > 0) {
@@ -68,9 +68,9 @@ export default class DioderAccessory {
   }
 
   pwm(r: number, g: number, b: number): void {
-    lg.txPwm(this.gpiochip, this.config.rPin, PWM_FREQUENCY, r, 0, 0);
-    lg.txPwm(this.gpiochip, this.config.gPin, PWM_FREQUENCY, g, 0, 0);
-    lg.txPwm(this.gpiochip, this.config.bPin, PWM_FREQUENCY, b, 0, 0);
+    lg.txPwm(this.gpiochip, this.config.rPin, PWM_FREQUENCY, r === 0 ? 0 : (r / 255) ** GAMMA_COR * (100 - MIN_PWM) + MIN_PWM, 0, 0);
+    lg.txPwm(this.gpiochip, this.config.gPin, PWM_FREQUENCY, g === 0 ? 0 : (g / 255) ** GAMMA_COR * (100 - MIN_PWM) + MIN_PWM, 0, 0);
+    lg.txPwm(this.gpiochip, this.config.bPin, PWM_FREQUENCY, b === 0 ? 0 : (b / 255) ** GAMMA_COR * (100 - MIN_PWM) + MIN_PWM, 0, 0);
   }
 
   setOn(on: CharacteristicValue): void {
@@ -116,8 +116,8 @@ export default class DioderAccessory {
   }
 
   setSaturation(s: CharacteristicValue): void {
-    this.log.info('setSaturation', s);
     this.hsv.s = s as number;
+    this.log.info('setSaturation', s, this.hsv.s);
     this.setHSV(this.hsv);
   }
 
@@ -128,16 +128,12 @@ export default class DioderAccessory {
   setHSV(c: HsvColor, t?: boolean): void {
     if (t || (this.on && this.getBrightness() > 0)) {
       const { r, g, b } = colord(c).toRgb();
-      this.pwm(
-        (r / 255) ** GAMMA_COR * (100 - MIN_PWM) + MIN_PWM,
-        (g / 255) ** GAMMA_COR * (100 - MIN_PWM) + MIN_PWM,
-        (b / 255) ** GAMMA_COR * (100 - MIN_PWM) + MIN_PWM
-      );
-      this.hsv = c;
-      if (!t) this.log.info(`set ${this.accessory.displayName} RGB to ${r}, ${g}, ${b}`);
+      this.pwm(r, g, b);
+      if (!t) this.log.info(`set ${this.accessory.displayName} r: ${r}, g: ${g}, b: ${b} or h: ${c.h}, s: ${c.s}, v: ${c.v}`);
     } else {
       this.log.warn('Skipping color change while light bulb being off');
     }
+    this.hsv = c;
   }
 
   getHSV(): HsvColor {
@@ -145,11 +141,7 @@ export default class DioderAccessory {
   }
 
   setRGB(r: number, g: number, b: number): void {
-    this.pwm(
-      (r / 255) ** GAMMA_COR * (100 - MIN_PWM) + MIN_PWM,
-      (g / 255) ** GAMMA_COR * (100 - MIN_PWM) + MIN_PWM,
-      (b / 255) ** GAMMA_COR * (100 - MIN_PWM) + MIN_PWM
-    );
+    this.pwm(r, g, b);
     this.hsv = colord({ r, g, b }).toHsv();
   }
 
