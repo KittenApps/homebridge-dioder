@@ -27,7 +27,9 @@ export default class DioderAccessory {
     this.log = platform.log;
 
     this.config = accessory.context.config;
-    this.pwm(0, 0, 0);
+    lg.gpioClaimOutput(gpiochip, this.config.rPin);
+    lg.gpioClaimOutput(gpiochip, this.config.gPin);
+    lg.gpioClaimOutput(gpiochip, this.config.bPin);
     this.hsv = { h: 0, s: 0, v: 0 };
     this.on = false;
 

@@ -31,6 +31,8 @@ export interface GradiantContext {
   config: GradiantConfig;
 }
 
+const PLUGIN_NAME = '@silizia/homebridge-dioder';
+
 export default class DioderPlatform implements DynamicPlatformPlugin {
   public readonly accessories: PlatformAccessory[] = [];
   public animationCancel?: () => void = undefined;
@@ -59,7 +61,7 @@ export default class DioderPlatform implements DynamicPlatformPlugin {
           const accessory = new this.api.platformAccessory<DioderContext>(c.name, uuid);
           accessory.context.config = c;
           dioderAccessories.push(new DioderAccessory(this, accessory, gpiochip));
-          this.api.registerPlatformAccessories('homebridge-dioder', 'Dioder', [accessory]);
+          this.api.registerPlatformAccessories(PLUGIN_NAME, 'Dioder', [accessory]);
         }
       }
       // RainbowAccessory
@@ -76,7 +78,7 @@ export default class DioderPlatform implements DynamicPlatformPlugin {
           const accessory = new this.api.platformAccessory('Rainbow Effect', uuid);
           // oxlint-disable-next-line no-new
           new RainbowAccessory(this, accessory, dioderAccessories);
-          this.api.registerPlatformAccessories('homebridge-dioder', 'Dioder', [accessory]);
+          this.api.registerPlatformAccessories(PLUGIN_NAME, 'Dioder', [accessory]);
         }
       }
       // GradientAccessory
@@ -94,7 +96,7 @@ export default class DioderPlatform implements DynamicPlatformPlugin {
           accessory.context.config = c;
           // oxlint-disable-next-line no-new
           new GradientAccessory(this, accessory, dioderAccessories);
-          this.api.registerPlatformAccessories('homebridge-dioder', 'Dioder', [accessory]);
+          this.api.registerPlatformAccessories(PLUGIN_NAME, 'Dioder', [accessory]);
         }
       }
       // removed unused Accessories
@@ -103,7 +105,7 @@ export default class DioderPlatform implements DynamicPlatformPlugin {
           'removing unused accessories',
           removedAccessories.map(a => a.displayName)
         );
-        this.api.unregisterPlatformAccessories('homebridge-dioder', 'Dioder', removedAccessories);
+        this.api.unregisterPlatformAccessories(PLUGIN_NAME, 'Dioder', removedAccessories);
       }
     });
   }
