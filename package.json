@@ -1,5 +1,5 @@
 {
-  "name": "homebridge-dioder",
+  "name": "@silizia/homebridge-dioder",
   "displayName": "Homebridge Dioder",
   "version": "0.1.0",
   "description": "Homebridge plugin to control Dioder LED strips over pigpio pins",
@@ -15,6 +15,10 @@
     "type": "git",
     "url": "https://github.com/KittenApps/homebridge-dioder.git"
   },
+  "files": [
+    "dist",
+    "config.schema.json"
+  ],
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
