@@ -1,12 +1,12 @@
 import type { PlatformAccessory } from 'homebridge';
 
-import { AnimatedAccessory } from './AnimatedAccessory';
-import type { DioderAccessory } from './DioderAccessory';
-import type { DioderPlatform } from './DioderPlatform';
+import AnimatedAccessory from './AnimatedAccessory';
+import type DioderAccessory from './DioderAccessory';
+import type DioderPlatform from './DioderPlatform';
 
 const SATURATION = 100;
 
-export class RainbowAccessory extends AnimatedAccessory {
+export default class RainbowAccessory extends AnimatedAccessory {
   private currentHue: number;
 
   constructor(platform: DioderPlatform, accessory: PlatformAccessory, leds: DioderAccessory[]) {

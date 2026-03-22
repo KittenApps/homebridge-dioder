@@ -1,15 +1,16 @@
-import { colord, RgbColor } from 'colord';
+import { colord, type RgbColor } from 'colord';
 import type { PlatformAccessory } from 'homebridge';
 
-import { AnimatedAccessory } from './AnimatedAccessory';
-import type { DioderAccessory } from './DioderAccessory';
-import type { DioderPlatform } from './DioderPlatform';
+import AnimatedAccessory from './AnimatedAccessory';
+import type DioderAccessory from './DioderAccessory';
+import type DioderPlatform from './DioderPlatform';
+import type { GradiantContext } from './DioderPlatform';
 
-export class GradientAccessory extends AnimatedAccessory {
+export default class GradientAccessory extends AnimatedAccessory {
   private currentStep: number;
-  private colors: RgbColor[];
+  private readonly colors: RgbColor[];
 
-  constructor(platform: DioderPlatform, accessory: PlatformAccessory, leds: DioderAccessory[]) {
+  constructor(platform: DioderPlatform, accessory: PlatformAccessory<GradiantContext>, leds: DioderAccessory[]) {
     super(platform, accessory, leds, accessory.context.config.name);
     this.currentStep = 0;
     this.colors = accessory.context.config.colors.map((c: string) => colord(c).toRgb());

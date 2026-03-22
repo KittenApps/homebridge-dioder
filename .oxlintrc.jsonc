@@ -61,7 +61,7 @@
     "oxc/no-async-await": "off",
     "oxc/no-optional-chaining": "off",
     "oxc/no-rest-spread-properties": "off",
-    "unicorn/filename-case": ["warn", { "case": "camelCase" }],
+    "unicorn/filename-case": ["warn", { "case": "pascalCase" }],
     "unicorn/prefer-query-selector": "off",
     "unicorn/no-null": "off",
     "unicorn/numeric-separators-style": "off",
@@ -124,5 +124,7 @@
     "typescript/no-unsafe-call": "off",
     "typescript/no-unsafe-return": "off",
     "typescript/no-unsafe-assignment": "off",
+    "typescript/parameter-properties": ["warn", { "prefer": "parameter-property" }],
   },
+  "overrides": [{ "files": ["tsdown.config.ts"], "rules": { "unicorn/filename-case": "off" } }],
 }

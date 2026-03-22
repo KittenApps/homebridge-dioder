@@ -1,13 +1,13 @@
 import type { PlatformAccessory, CharacteristicValue, Service, Logging } from 'homebridge';
 
-import type { DioderAccessory } from './DioderAccessory';
-import type { DioderPlatform } from './DioderPlatform';
+import type DioderAccessory from './DioderAccessory';
+import type DioderPlatform from './DioderPlatform';
 
 const INTERVAL = 1000 / 30; // 30 FPS
 const SPEED = 100; // 1..100 => 0.01..1
 const OFFSET_CT = 5; // 140..500  => 28..100
 
-export class AnimatedAccessory {
+export default class AnimatedAccessory {
   public brightness: number;
   public offset: number;
   public speed: number;
@@ -26,7 +26,7 @@ export class AnimatedAccessory {
     public readonly leds: DioderAccessory[],
     name: string
   ) {
-    const hap = this.platform.api.hap;
+    const { hap } = this.platform.api;
     this.Characteristic = hap.Characteristic;
     this.log = this.platform.log;
 
@@ -38,8 +38,8 @@ export class AnimatedAccessory {
     this.interval = undefined;
 
     this.accessory
-      .getService(hap.Service.AccessoryInformation)!
-      .setCharacteristic(this.Characteristic.Manufacturer, 'Silizia')
+      .getService(hap.Service.AccessoryInformation)
+      ?.setCharacteristic(this.Characteristic.Manufacturer, 'Silizia')
       .setCharacteristic(this.Characteristic.Model, 'Fancy LED')
       .setCharacteristic(this.Characteristic.SerialNumber, '42');
 
@@ -141,6 +141,7 @@ export class AnimatedAccessory {
     return this.speed * SPEED;
   }
 
+  // oxlint-disable-next-line class-methods-use-this, no-empty-function
   runAnimation(): void {}
 
   cancelAnimation(): void {

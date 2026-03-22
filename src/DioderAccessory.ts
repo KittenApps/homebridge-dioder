@@ -1,30 +1,30 @@
-import { colord, HsvColor } from 'colord';
+import { colord, type HsvColor } from 'colord';
 import type { CharacteristicValue, PlatformAccessory, Service, Logging } from 'homebridge';
 import { txPwm } from 'lgpio';
 
-import type { DioderPlatform } from './DioderPlatform';
+import type DioderPlatform from './DioderPlatform';
+import type { DioderContext, LedConfig } from './DioderPlatform';
 
 const MIN_PWM = 31.4995 / 8000; // min pwm to get actually light from dioder, depends on PWM_RANGE
 const GAMMA_COR = 2.8;
 
-export class DioderAccessory {
-  private hsv: HsvColor;
+export default class DioderAccessory {
+  private readonly hsv: HsvColor;
   private on: boolean;
 
   private readonly LEDservice: Service;
   private readonly Characteristic;
   private readonly log: Logging;
-  private readonly config: { name: string; rPin: number; gPin: number; bPin: number };
+  private readonly config: LedConfig;
 
   constructor(
     private readonly platform: DioderPlatform,
-    private readonly accessory: PlatformAccessory,
+    private readonly accessory: PlatformAccessory<DioderContext>,
     private readonly gpiochip: number
   ) {
-    const hap = platform.api.hap;
+    const { hap } = platform.api;
     this.Characteristic = hap.Characteristic;
     this.log = platform.log;
-    this.gpiochip = gpiochip;
 
     this.config = accessory.context.config;
     this.pwm(0, 0, 0);
@@ -32,8 +32,8 @@ export class DioderAccessory {
     this.on = false;
 
     this.accessory
-      .getService(hap.Service.AccessoryInformation)!
-      .setCharacteristic(this.Characteristic.Manufacturer, 'Silizia')
+      .getService(hap.Service.AccessoryInformation)
+      ?.setCharacteristic(this.Characteristic.Manufacturer, 'Silizia')
       .setCharacteristic(this.Characteristic.Model, 'Fancy LED')
       .setCharacteristic(this.Characteristic.SerialNumber, '42');
 
@@ -125,9 +125,9 @@ export class DioderAccessory {
     if (t || (this.on && this.getBrightness() > 0)) {
       const { r, g, b } = colord(c).toRgb();
       this.pwm(
-        Math.round(Math.pow(r / 255, GAMMA_COR) * (1 - MIN_PWM) + MIN_PWM),
-        Math.round(Math.pow(g / 255, GAMMA_COR) * (1 - MIN_PWM) + MIN_PWM),
-        Math.round(Math.pow(b / 255, GAMMA_COR) * (1 - MIN_PWM) + MIN_PWM)
+        Math.round((r / 255) ** GAMMA_COR * (1 - MIN_PWM) + MIN_PWM),
+        Math.round((g / 255) ** GAMMA_COR * (1 - MIN_PWM) + MIN_PWM),
+        Math.round((b / 255) ** GAMMA_COR * (1 - MIN_PWM) + MIN_PWM)
       );
       if (!t) this.log.info(`set ${this.accessory.displayName} RGB to ${r}, ${g}, ${b}`);
     } else {
@@ -139,11 +139,11 @@ export class DioderAccessory {
     return this.hsv;
   }
 
-  setRGB(r: number, g: number, b: number) {
+  setRGB(r: number, g: number, b: number): void {
     this.pwm(
-      Math.round(Math.pow(r / 255, GAMMA_COR) * (1 - MIN_PWM) + MIN_PWM),
-      Math.round(Math.pow(g / 255, GAMMA_COR) * (1 - MIN_PWM) + MIN_PWM),
-      Math.round(Math.pow(b / 255, GAMMA_COR) * (1 - MIN_PWM) + MIN_PWM)
+      Math.round((r / 255) ** GAMMA_COR * (1 - MIN_PWM) + MIN_PWM),
+      Math.round((g / 255) ** GAMMA_COR * (1 - MIN_PWM) + MIN_PWM),
+      Math.round((b / 255) ** GAMMA_COR * (1 - MIN_PWM) + MIN_PWM)
     );
   }
 
