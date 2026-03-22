@@ -1,14 +1,19 @@
-import { DioderAccessory } from "./DioderAccessory";
-import { RainbowAccessory } from "./RainbowAccessory";
-import { GradientAccessory } from "./GradientAccessory";
-import type { PlatformAccessory, API, Logging, PlatformConfig, DynamicPlatformPlugin } from "homebridge";
+import type { PlatformAccessory, API, Logging, PlatformConfig, DynamicPlatformPlugin } from 'homebridge';
 import { gpiochipOpen } from 'lgpio';
+
+import { DioderAccessory } from './DioderAccessory';
+import { GradientAccessory } from './GradientAccessory';
+import { RainbowAccessory } from './RainbowAccessory';
 
 export class DioderPlatform implements DynamicPlatformPlugin {
   public readonly accessories: PlatformAccessory[] = [];
   public animationCancel: Function | undefined = undefined;
 
-  constructor(public readonly log: Logging, public readonly config: PlatformConfig, public readonly api: API) {
+  constructor(
+    public readonly log: Logging,
+    public readonly config: PlatformConfig,
+    public readonly api: API
+  ) {
     this.log.debug('Finished initializing platform: Dioder');
     this.api.on('didFinishLaunching', () => {
       this.log.debug('Executed didFinishLaunching callback');
@@ -16,7 +21,7 @@ export class DioderPlatform implements DynamicPlatformPlugin {
       // DioderAccessories
       const dioderAccessories: DioderAccessory[] = [];
       const gpiochip = gpiochipOpen(0);
-      for (const c of (this.config.leds || [])) {
+      for (const c of this.config.leds || []) {
         const uuid = this.api.hap.uuid.generate(JSON.stringify(c));
         const existingAccessory = this.accessories.find(accessory => accessory.UUID === uuid);
         if (existingAccessory) {
@@ -33,7 +38,7 @@ export class DioderPlatform implements DynamicPlatformPlugin {
       }
       // RainbowAccessory
       if (this.config.rainbowAnim?.enabled) {
-        let uuid = this.api.hap.uuid.generate("Rainbow Effect");
+        let uuid = this.api.hap.uuid.generate('Rainbow Effect');
         let existingAccessory = this.accessories.find(accessory => accessory.UUID === uuid);
         if (existingAccessory) {
           removedAccessories = removedAccessories.filter(accessory => accessory.UUID !== uuid);
@@ -41,13 +46,13 @@ export class DioderPlatform implements DynamicPlatformPlugin {
           new RainbowAccessory(this, existingAccessory, dioderAccessories);
         } else {
           this.log.info('Adding new accessory: Rainbow Effect');
-          const accessory = new this.api.platformAccessory("Rainbow Effect", uuid);
+          const accessory = new this.api.platformAccessory('Rainbow Effect', uuid);
           new RainbowAccessory(this, accessory, dioderAccessories);
           this.api.registerPlatformAccessories('homebridge-dioder', 'Dioder', [accessory]);
         }
       }
       // GradientAccessory
-      for (const c of (this.config.gradientAnim || [])) {
+      for (const c of this.config.gradientAnim || []) {
         const uuid = this.api.hap.uuid.generate(JSON.stringify(c));
         const existingAccessory = this.accessories.find(accessory => accessory.UUID === uuid);
         if (existingAccessory) {
@@ -64,7 +69,10 @@ export class DioderPlatform implements DynamicPlatformPlugin {
       }
       // removed unused Accessories
       if (removedAccessories.length > 0) {
-        this.log.warn('removing unused accessories', removedAccessories.map(a => a.displayName));
+        this.log.warn(
+          'removing unused accessories',
+          removedAccessories.map(a => a.displayName)
+        );
         this.api.unregisterPlatformAccessories('homebridge-dioder', 'Dioder', removedAccessories);
       }
     });
@@ -76,7 +84,7 @@ export class DioderPlatform implements DynamicPlatformPlugin {
   }
 
   setAnimationCancel(callback: Function): void {
-    if (this.animationCancel !== undefined){
+    if (this.animationCancel !== undefined) {
       (this.animationCancel as Function)();
     }
     this.animationCancel = callback;
@@ -87,7 +95,7 @@ export class DioderPlatform implements DynamicPlatformPlugin {
   }
 
   stopAnimation(): void {
-    if (this.animationCancel !== undefined){
+    if (this.animationCancel !== undefined) {
       (this.animationCancel as Function)();
       this.animationCancel = undefined;
     }

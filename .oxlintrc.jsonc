@@ -9,7 +9,7 @@
     "perf": "warn",
     "style": "warn",
     "restriction": "warn",
-    "nursery": "warn"
+    "nursery": "warn",
   },
   "options": { "typeAware": true, "typeCheck": true, "reportUnusedDisableDirectives": "warn" },
   "env": { "node": true },
@@ -123,6 +123,6 @@
     "typescript/no-unsafe-member-access": "off",
     "typescript/no-unsafe-call": "off",
     "typescript/no-unsafe-return": "off",
-    "typescript/no-unsafe-assignment": "off"
-  }
+    "typescript/no-unsafe-assignment": "off",
+  },
 }

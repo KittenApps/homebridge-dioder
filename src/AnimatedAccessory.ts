@@ -1,4 +1,5 @@
 import type { PlatformAccessory, CharacteristicValue, Service, Logging } from 'homebridge';
+
 import type { DioderAccessory } from './DioderAccessory';
 import type { DioderPlatform } from './DioderPlatform';
 
@@ -19,7 +20,12 @@ export class AnimatedAccessory {
   private readonly Characteristic;
   public readonly log: Logging;
 
-  constructor(private readonly platform: DioderPlatform, private readonly accessory: PlatformAccessory, public readonly leds: DioderAccessory[], name: string) {
+  constructor(
+    private readonly platform: DioderPlatform,
+    private readonly accessory: PlatformAccessory,
+    public readonly leds: DioderAccessory[],
+    name: string
+  ) {
     const hap = this.platform.api.hap;
     this.Characteristic = hap.Characteristic;
     this.log = this.platform.log;
@@ -31,18 +37,21 @@ export class AnimatedAccessory {
     this.speed = 0.5;
     this.interval = undefined;
 
-    this.accessory.getService(hap.Service.AccessoryInformation)!
+    this.accessory
+      .getService(hap.Service.AccessoryInformation)!
       .setCharacteristic(this.Characteristic.Manufacturer, 'Silizia')
       .setCharacteristic(this.Characteristic.Model, 'Fancy LED')
       .setCharacteristic(this.Characteristic.SerialNumber, '42');
-    
+
     this.accessory.on('identify', () => this.identify());
 
     this.LEDservice = this.accessory.getService(hap.Service.Lightbulb) || this.accessory.addService(hap.Service.Lightbulb);
     this.LEDservice.setCharacteristic(this.Characteristic.Name, name);
     this.LEDservice.getCharacteristic(this.Characteristic.On).onGet(this.getOn.bind(this)).onSet(this.setOn.bind(this));
     this.LEDservice.getCharacteristic(this.Characteristic.Brightness).onGet(this.getBrightness.bind(this)).onSet(this.setBrightness.bind(this));
-    this.LEDservice.getCharacteristic(this.Characteristic.ColorTemperature).onGet(this.getColorTemperature.bind(this)).onSet(this.setColorTemperature.bind(this));
+    this.LEDservice.getCharacteristic(this.Characteristic.ColorTemperature)
+      .onGet(this.getColorTemperature.bind(this))
+      .onSet(this.setColorTemperature.bind(this));
 
     this.FanService = this.accessory.getService(hap.Service.Fan) || this.accessory.addService(hap.Service.Fan);
     this.FanService.setCharacteristic(this.Characteristic.Name, `${name} Speed`);
@@ -51,19 +60,19 @@ export class AnimatedAccessory {
   }
 
   identify(): void {
-    this.log.info("Identify!");
+    this.log.info('Identify!');
   }
-  
+
   setOn(on: CharacteristicValue): void {
     this.log.info(`rainbow setOn`, on);
     this.on = on as boolean;
-    if (on){
-      if (this.getBrightness() === 0){
+    if (on) {
+      if (this.getBrightness() === 0) {
         this.LEDservice.setCharacteristic(this.Characteristic.Brightness, 100);
       }
       this.FanService.updateCharacteristic(this.Characteristic.On, true);
       this.onS = true;
-      if (this.getSpeed() === 0){
+      if (this.getSpeed() === 0) {
         this.FanService.setCharacteristic(this.Characteristic.RotationSpeed, 50);
       }
       this.interval = setInterval(() => this.runAnimation(), INTERVAL);
@@ -82,16 +91,16 @@ export class AnimatedAccessory {
   }
 
   setOnS(on: CharacteristicValue): void {
-    this.log.info("rainbow setOnS", on);
+    this.log.info('rainbow setOnS', on);
     this.onS = on as boolean;
-    if (on){
-      if (this.getSpeed() === 0){
+    if (on) {
+      if (this.getSpeed() === 0) {
         this.FanService.setCharacteristic(this.Characteristic.RotationSpeed, 50);
       }
       this.interval = setInterval(() => this.runAnimation(), INTERVAL);
       this.LEDservice.updateCharacteristic(this.Characteristic.On, true);
       this.on = true;
-      if (this.getBrightness() === 0){
+      if (this.getBrightness() === 0) {
         this.LEDservice.setCharacteristic(this.Characteristic.Brightness, 100);
       }
       this.platform.setAnimationCancel(this.cancelAnimation.bind(this));
@@ -106,7 +115,7 @@ export class AnimatedAccessory {
   }
 
   setBrightness(v: CharacteristicValue): void {
-    this.log.info("rainbow setBrightness", v);
+    this.log.info('rainbow setBrightness', v);
     this.brightness = v as number;
   }
 
@@ -115,7 +124,7 @@ export class AnimatedAccessory {
   }
 
   setColorTemperature(v: CharacteristicValue): void {
-    this.log.info("rainbow setColorTemperature", v);
+    this.log.info('rainbow setColorTemperature', v);
     this.offset = (v as number) / OFFSET_CT;
   }
 
@@ -124,7 +133,7 @@ export class AnimatedAccessory {
   }
 
   setSpeed(v: CharacteristicValue): void {
-    this.log.info("rainbow speed", v);
+    this.log.info('rainbow speed', v);
     this.speed = (v as number) / SPEED;
   }
 
@@ -132,10 +141,9 @@ export class AnimatedAccessory {
     return this.speed * SPEED;
   }
 
-  runAnimation(): void {
-  }
+  runAnimation(): void {}
 
-  cancelAnimation() : void {
+  cancelAnimation(): void {
     clearInterval(this.interval);
     this.interval = undefined;
     this.LEDservice.updateCharacteristic(this.Characteristic.On, false);
