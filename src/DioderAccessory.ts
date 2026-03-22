@@ -10,7 +10,7 @@ const PWM_FREQUENCY = 10000;
 const GAMMA_COR = 2.8;
 
 export default class DioderAccessory {
-  private readonly hsv: HsvColor;
+  private hsv: HsvColor;
   private on: boolean;
 
   private readonly LEDservice: Service;
@@ -86,6 +86,7 @@ export default class DioderAccessory {
       }
     } else {
       this.pwm(0, 0, 0);
+      this.hsv = { h: 0, s: 0, v: 0 };
     }
   }
 
@@ -128,10 +129,11 @@ export default class DioderAccessory {
     if (t || (this.on && this.getBrightness() > 0)) {
       const { r, g, b } = colord(c).toRgb();
       this.pwm(
-        Math.round((r / 255) ** GAMMA_COR * (100 - MIN_PWM) + MIN_PWM),
-        Math.round((g / 255) ** GAMMA_COR * (100 - MIN_PWM) + MIN_PWM),
-        Math.round((b / 255) ** GAMMA_COR * (100 - MIN_PWM) + MIN_PWM)
+        (r / 255) ** GAMMA_COR * (100 - MIN_PWM) + MIN_PWM,
+        (g / 255) ** GAMMA_COR * (100 - MIN_PWM) + MIN_PWM,
+        (b / 255) ** GAMMA_COR * (100 - MIN_PWM) + MIN_PWM
       );
+      this.hsv = c;
       if (!t) this.log.info(`set ${this.accessory.displayName} RGB to ${r}, ${g}, ${b}`);
     } else {
       this.log.warn('Skipping color change while light bulb being off');
@@ -144,13 +146,15 @@ export default class DioderAccessory {
 
   setRGB(r: number, g: number, b: number): void {
     this.pwm(
-      Math.round((r / 255) ** GAMMA_COR * (100 - MIN_PWM) + MIN_PWM),
-      Math.round((g / 255) ** GAMMA_COR * (100 - MIN_PWM) + MIN_PWM),
-      Math.round((b / 255) ** GAMMA_COR * (100 - MIN_PWM) + MIN_PWM)
+      (r / 255) ** GAMMA_COR * (100 - MIN_PWM) + MIN_PWM,
+      (g / 255) ** GAMMA_COR * (100 - MIN_PWM) + MIN_PWM,
+      (b / 255) ** GAMMA_COR * (100 - MIN_PWM) + MIN_PWM
     );
+    this.hsv = colord({ r, g, b }).toHsv();
   }
 
   turnOff(): void {
     this.pwm(0, 0, 0);
+    this.hsv = { h: 0, s: 0, v: 0 };
   }
 }
