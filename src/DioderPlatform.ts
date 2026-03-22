@@ -1,5 +1,5 @@
 import type { PlatformAccessory, API, Logging, PlatformConfig, DynamicPlatformPlugin } from 'homebridge';
-import { gpiochipOpen } from 'lgpio';
+import lg from 'lgpio';
 
 import DioderAccessory from './DioderAccessory';
 import GradientAccessory from './GradientAccessory';
@@ -46,7 +46,7 @@ export default class DioderPlatform implements DynamicPlatformPlugin {
       let removedAccessories = this.accessories;
       // DioderAccessories
       const dioderAccessories: DioderAccessory[] = [];
-      const gpiochip = gpiochipOpen(0);
+      const gpiochip = lg.gpiochipOpen(0);
       for (const c of this.config.leds || []) {
         const uuid = this.api.hap.uuid.generate(JSON.stringify(c));
         const existingAccessory = this.accessories.find(accessory => accessory.UUID === uuid) as PlatformAccessory<DioderContext>;

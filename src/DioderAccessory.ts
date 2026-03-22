@@ -1,6 +1,6 @@
 import { colord, type HsvColor } from 'colord';
 import type { CharacteristicValue, PlatformAccessory, Service, Logging } from 'homebridge';
-import { txPwm } from 'lgpio';
+import lg from 'lgpio';
 
 import type DioderPlatform from './DioderPlatform';
 import type { DioderContext, LedConfig } from './DioderPlatform';
@@ -65,9 +65,9 @@ export default class DioderAccessory {
   }
 
   pwm(r: number, b: number, g: number): void {
-    txPwm(this.gpiochip, this.config.rPin, 8000, r, 0, 0);
-    txPwm(this.gpiochip, this.config.gPin, 8000, g, 0, 0);
-    txPwm(this.gpiochip, this.config.bPin, 8000, b, 0, 0);
+    lg.txPwm(this.gpiochip, this.config.rPin, 8000, r, 0, 0);
+    lg.txPwm(this.gpiochip, this.config.gPin, 8000, g, 0, 0);
+    lg.txPwm(this.gpiochip, this.config.bPin, 8000, b, 0, 0);
   }
 
   setOn(on: CharacteristicValue): void {
