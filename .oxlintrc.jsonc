@@ -127,5 +127,5 @@
     "typescript/parameter-properties": ["warn", { "prefer": "parameter-property" }],
     "typescript/consistent-generic-constructors": ["warn", "type-annotation"],
   },
-  "overrides": [{ "files": ["tsdown.config.ts"], "rules": { "unicorn/filename-case": "off" } }],
+  "overrides": [{ "files": ["rolldown.config.js"], "rules": { "unicorn/filename-case": "off" } }],
 }
