@@ -47,10 +47,6 @@ export default class DioderPlatform implements DynamicPlatformPlugin {
     this.log.debug('Finished initializing platform: Dioder');
     this.api.on('didFinishLaunching', () => {
       this.log.debug('Executed didFinishLaunching callback');
-      // removed unused Accessories
-      if (this.outdatedAccessories.length > 0) {
-        this.api.unregisterPlatformAccessories(PLUGIN_NAME, 'Dioder', this.outdatedAccessories);
-      }
       // DioderAccessories
       const dioderAccessories: DioderAccessory[] = [];
       const gpiochip = lg.gpiochipOpen(0);
@@ -61,6 +57,11 @@ export default class DioderPlatform implements DynamicPlatformPlugin {
           this.log.info('Restoring existing accessory from cache:', existingAccessory.displayName);
           dioderAccessories.push(new DioderAccessory(this, existingAccessory, gpiochip));
         } else {
+          const outdatedAccessory = Array.from(this.accessories).map(([_k, v]) => v).find(v => v.displayName === c.name);
+          if (outdatedAccessory) {
+             this.log.info('Removing outdated accessory from cache:', outdatedAccessory.displayName, outdatedAccessory.UUID);
+             this.api.unregisterPlatformAccessories(PLUGIN_NAME, 'Dioder', [outdatedAccessory]);
+          }
           this.log.info('Adding new accessory:', c.name);
           const accessory = new this.api.platformAccessory<DioderContext>(c.name, uuid);
           accessory.context.config = c;
@@ -77,6 +78,11 @@ export default class DioderPlatform implements DynamicPlatformPlugin {
           // oxlint-disable-next-line no-new
           new RainbowAccessory(this, existingAccessory, dioderAccessories);
         } else {
+          const outdatedAccessory = Array.from(this.accessories).map(([_k, v]) => v).find(v => v.displayName === 'Rainbow Effect');
+          if (outdatedAccessory) {
+             this.log.info('Removing outdated accessory from cache:', outdatedAccessory.displayName, outdatedAccessory.UUID);
+             this.api.unregisterPlatformAccessories(PLUGIN_NAME, 'Dioder', [outdatedAccessory]);
+          }
           this.log.info('Adding new accessory: Rainbow Effect');
           const accessory = new this.api.platformAccessory('Rainbow Effect', uuid);
           // oxlint-disable-next-line no-new
@@ -93,6 +99,11 @@ export default class DioderPlatform implements DynamicPlatformPlugin {
           // oxlint-disable-next-line no-new
           new GradientAccessory(this, existingAccessory, dioderAccessories);
         } else {
+          const outdatedAccessory = Array.from(this.accessories).map(([_k, v]) => v).find(v => v.displayName === c.name);
+          if (outdatedAccessory) {
+             this.log.info('Removing outdated accessory from cache:', outdatedAccessory.displayName, outdatedAccessory.UUID);
+             this.api.unregisterPlatformAccessories(PLUGIN_NAME, 'Dioder', [outdatedAccessory]);
+          }
           this.log.info('Adding new gradient accessory:', c.name);
           const accessory = new this.api.platformAccessory<GradiantContext>(c.name, uuid);
           accessory.context.config = c;
@@ -105,16 +116,8 @@ export default class DioderPlatform implements DynamicPlatformPlugin {
   }
 
   configureAccessory(accessory: PlatformAccessory): void {
-    let c = JSON.stringify(this.config.leds.find(l => l.name === accessory.displayName));
-    if (!c) c = JSON.stringify(this.config.gradientAnim.find(g => g.name === accessory.displayName));
-    if (!c && accessory.displayName === 'Rainbow Effect' && this.config.rainbowAnim.enabled) c = 'Rainbow Effect';
-    if (c && this.api.hap.uuid.generate(c) === accessory.UUID) {
-      this.log.info('Loading accessory from cache:', accessory.displayName);
-      this.accessories.set(accessory.UUID, accessory);
-    } else {
-      this.log.info('Removing outdated accessory from cache:', accessory.displayName);
-      this.outdatedAccessories.push(accessory);
-    }
+    this.log.info('Loading accessory from cache:', accessory.displayName, accessory.UUID);
+    this.accessories.set(accessory.UUID, accessory);
   }
 
   // oxlint-disable-next-line promise/prefer-await-to-callbacks
