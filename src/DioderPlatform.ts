@@ -106,7 +106,7 @@ export default class DioderPlatform implements DynamicPlatformPlugin {
 
   configureAccessory(accessory: PlatformAccessory): void {
     const c = this.config.leds.find(l => l.name === accessory.displayName);
-    if (this.api.hap.uuid.generate(JSON.stringify(c)) === accessory.UUID) {
+    if (c && this.api.hap.uuid.generate(JSON.stringify(c)) === accessory.UUID) {
       this.log.info('Loading accessory from cache:', accessory.displayName);
       this.accessories.set(accessory.UUID, accessory);
     } else {
