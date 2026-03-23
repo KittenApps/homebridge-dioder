@@ -46,9 +46,9 @@ export default class DioderAccessory {
     this.LEDservice.setCharacteristic(this.Characteristic.Name, this.config.name);
 
     this.LEDservice.getCharacteristic(this.Characteristic.On).onGet(this.getOn.bind(this)).onSet(this.setOn.bind(this));
-    this.LEDservice.getCharacteristic(this.Characteristic.Brightness).onGet(this.getBrightness.bind(this)).onSet(this.setBrightness.bind(this));
-    this.LEDservice.getCharacteristic(this.Characteristic.Hue).onGet(this.getHue.bind(this)).onSet(this.setHue.bind(this));
-    this.LEDservice.getCharacteristic(this.Characteristic.Saturation).onGet(this.getSaturation.bind(this)).onSet(this.setSaturation.bind(this));
+    this.LEDservice.getCharacteristic(this.Characteristic.Brightness).onSet(this.setBrightness.bind(this));
+    this.LEDservice.getCharacteristic(this.Characteristic.Hue).onSet(this.setHue.bind(this));
+    this.LEDservice.getCharacteristic(this.Characteristic.Saturation).onSet(this.setSaturation.bind(this));
   }
 
   identify(): void {
@@ -57,7 +57,7 @@ export default class DioderAccessory {
       this.pwm(255, 0, 0);
       setTimeout(() => {
         this.pwm(0, 0, 0);
-        if (this.getBrightness() > 0) {
+        if (this.hsv.v > 0) {
           setTimeout(() => {
             this.setHSV(this.hsv);
           }, 1000);
@@ -78,7 +78,7 @@ export default class DioderAccessory {
     this.on = on as boolean;
     if (on) {
       this.platform.stopAnimation();
-      if (this.getBrightness() === 0) {
+      if (this.hsv.v === 0) {
         this.hsv.v = 100;
         this.LEDservice.setCharacteristic(this.Characteristic.Brightness, 100);
       } else {
@@ -92,7 +92,7 @@ export default class DioderAccessory {
 
   getOn(): boolean {
     if (this.platform.isAnimationRunning()) return false;
-    return this.getBrightness() > 0;
+    return this.hsv.v > 0;
   }
 
   setBrightness(v: CharacteristicValue): void {
@@ -101,18 +101,10 @@ export default class DioderAccessory {
     this.setHSV(this.hsv);
   }
 
-  getBrightness(): number {
-    return this.hsv.v;
-  }
-
   setHue(h: CharacteristicValue): void {
     this.log.info('setHue', h);
     this.hsv.h = h as number;
     this.setHSV(this.hsv);
-  }
-
-  getHue(): number {
-    return this.hsv.h;
   }
 
   setSaturation(s: CharacteristicValue): void {
@@ -121,12 +113,8 @@ export default class DioderAccessory {
     this.setHSV(this.hsv);
   }
 
-  getSaturation(): number {
-    return this.hsv.s;
-  }
-
   setHSV(c: HsvColor, t?: boolean): void {
-    if (t || (this.on && this.getBrightness() > 0)) {
+    if (t || (this.on && this.hsv.v > 0)) {
       const { r, g, b } = colord(c).toRgb();
       this.pwm(r, g, b);
       if (!t) this.log.info(`set ${this.accessory.displayName} r: ${r}, g: ${g}, b: ${b} or h: ${c.h}, s: ${c.s}, v: ${c.v}`);

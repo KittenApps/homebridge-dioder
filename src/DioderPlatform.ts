@@ -35,7 +35,7 @@ export interface GradiantContext {
 const PLUGIN_NAME = '@silizia/homebridge-dioder';
 
 export default class DioderPlatform implements DynamicPlatformPlugin {
-  public readonly accessories: PlatformAccessory[] = [];
+  public readonly accessories: Map<string, PlatformAccessory> = new Map();
   public animationCancel?: () => void = undefined;
 
   constructor(
@@ -51,7 +51,7 @@ export default class DioderPlatform implements DynamicPlatformPlugin {
       const gpiochip = lg.gpiochipOpen(0);
       for (const c of this.config.leds || []) {
         const uuid = this.api.hap.uuid.generate(JSON.stringify(c));
-        const existingAccessory = this.accessories.find(accessory => accessory.UUID === uuid) as PlatformAccessory<DioderContext>;
+        const existingAccessory = this.accessories.get(uuid) as PlatformAccessory<DioderContext>;
         if (existingAccessory) {
           this.log.info('Restoring existing accessory from cache:', existingAccessory.displayName);
           dioderAccessories.push(new DioderAccessory(this, existingAccessory, gpiochip));
@@ -66,7 +66,7 @@ export default class DioderPlatform implements DynamicPlatformPlugin {
       // RainbowAccessory
       if (this.config.rainbowAnim?.enabled) {
         const uuid = this.api.hap.uuid.generate('Rainbow Effect');
-        const existingAccessory = this.accessories.find(accessory => accessory.UUID === uuid);
+        const existingAccessory = this.accessories.get(uuid);
         if (existingAccessory) {
           this.log.info('Restoring existing accessory from cache:', existingAccessory.displayName);
           // oxlint-disable-next-line no-new
@@ -82,7 +82,7 @@ export default class DioderPlatform implements DynamicPlatformPlugin {
       // GradientAccessory
       for (const c of this.config.gradientAnim || []) {
         const uuid = this.api.hap.uuid.generate(JSON.stringify(c));
-        const existingAccessory = this.accessories.find(accessory => accessory.UUID === uuid) as PlatformAccessory<GradiantContext>;
+        const existingAccessory = this.accessories.get(uuid) as PlatformAccessory<GradiantContext>;
         if (existingAccessory) {
           this.log.info('Restoring existing accessory from cache:', existingAccessory.displayName);
           // oxlint-disable-next-line no-new
@@ -101,7 +101,7 @@ export default class DioderPlatform implements DynamicPlatformPlugin {
 
   configureAccessory(accessory: PlatformAccessory): void {
     this.log.info('Loading accessory from cache:', accessory.displayName);
-    this.accessories.push(accessory);
+    this.accessories.set(accessory.UUID, accessory);
   }
 
   // oxlint-disable-next-line promise/prefer-await-to-callbacks
