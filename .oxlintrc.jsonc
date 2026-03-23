@@ -125,7 +125,7 @@
     "typescript/no-unsafe-return": "off",
     "typescript/no-unsafe-assignment": "off",
     "typescript/parameter-properties": ["warn", { "prefer": "parameter-property" }],
-    "typescript/consistent-generic-constructors": ["warn", "type-annotation"]
+    "typescript/consistent-generic-constructors": ["warn", "type-annotation"],
   },
   "overrides": [{ "files": ["tsdown.config.ts"], "rules": { "unicorn/filename-case": "off" } }],
 }

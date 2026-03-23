@@ -46,6 +46,7 @@ export default class DioderPlatform implements DynamicPlatformPlugin {
     this.log.debug('Finished initializing platform: Dioder');
     this.api.on('didFinishLaunching', () => {
       this.log.debug('Executed didFinishLaunching callback');
+      const removedAccessories = this.accessories;
       // DioderAccessories
       const dioderAccessories: DioderAccessory[] = [];
       const gpiochip = lg.gpiochipOpen(0);
@@ -53,6 +54,7 @@ export default class DioderPlatform implements DynamicPlatformPlugin {
         const uuid = this.api.hap.uuid.generate(JSON.stringify(c));
         const existingAccessory = this.accessories.get(uuid) as PlatformAccessory<DioderContext>;
         if (existingAccessory) {
+          removedAccessories.delete(uuid);
           this.log.info('Restoring existing accessory from cache:', existingAccessory.displayName);
           dioderAccessories.push(new DioderAccessory(this, existingAccessory, gpiochip));
         } else {
@@ -68,6 +70,7 @@ export default class DioderPlatform implements DynamicPlatformPlugin {
         const uuid = this.api.hap.uuid.generate('Rainbow Effect');
         const existingAccessory = this.accessories.get(uuid);
         if (existingAccessory) {
+          removedAccessories.delete(uuid);
           this.log.info('Restoring existing accessory from cache:', existingAccessory.displayName);
           // oxlint-disable-next-line no-new
           new RainbowAccessory(this, existingAccessory, dioderAccessories);
@@ -84,6 +87,7 @@ export default class DioderPlatform implements DynamicPlatformPlugin {
         const uuid = this.api.hap.uuid.generate(JSON.stringify(c));
         const existingAccessory = this.accessories.get(uuid) as PlatformAccessory<GradiantContext>;
         if (existingAccessory) {
+          removedAccessories.delete(uuid);
           this.log.info('Restoring existing accessory from cache:', existingAccessory.displayName);
           // oxlint-disable-next-line no-new
           new GradientAccessory(this, existingAccessory, dioderAccessories);
@@ -95,6 +99,15 @@ export default class DioderPlatform implements DynamicPlatformPlugin {
           new GradientAccessory(this, accessory, dioderAccessories);
           this.api.registerPlatformAccessories(PLUGIN_NAME, 'Dioder', [accessory]);
         }
+      }
+      // removed unused Accessories
+      if (removedAccessories.size > 0) {
+        const ra = Array.from(removedAccessories).map(([_key, value]) => value);
+        this.log.warn(
+          'removing unused accessories',
+          ra.map(a => a.displayName)
+        );
+        this.api.unregisterPlatformAccessories(PLUGIN_NAME, 'Dioder', ra);
       }
     });
   }
