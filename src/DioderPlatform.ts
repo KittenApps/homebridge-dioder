@@ -36,6 +36,7 @@ const PLUGIN_NAME = '@silizia/homebridge-dioder';
 
 export default class DioderPlatform implements DynamicPlatformPlugin {
   public readonly accessories: Map<string, PlatformAccessory> = new Map();
+  public readonly outdatedAccessories: PlatformAccessory[] = [];
   public animationCancel?: () => void = undefined;
 
   constructor(
@@ -46,7 +47,10 @@ export default class DioderPlatform implements DynamicPlatformPlugin {
     this.log.debug('Finished initializing platform: Dioder');
     this.api.on('didFinishLaunching', () => {
       this.log.debug('Executed didFinishLaunching callback');
-      const removedAccessories = this.accessories;
+      // removed unused Accessories
+      if (this.outdatedAccessories.length > 0) {
+        this.api.unregisterPlatformAccessories(PLUGIN_NAME, 'Dioder', this.outdatedAccessories);
+      }
       // DioderAccessories
       const dioderAccessories: DioderAccessory[] = [];
       const gpiochip = lg.gpiochipOpen(0);
@@ -54,7 +58,6 @@ export default class DioderPlatform implements DynamicPlatformPlugin {
         const uuid = this.api.hap.uuid.generate(JSON.stringify(c));
         const existingAccessory = this.accessories.get(uuid) as PlatformAccessory<DioderContext>;
         if (existingAccessory) {
-          removedAccessories.delete(uuid);
           this.log.info('Restoring existing accessory from cache:', existingAccessory.displayName);
           dioderAccessories.push(new DioderAccessory(this, existingAccessory, gpiochip));
         } else {
@@ -70,7 +73,6 @@ export default class DioderPlatform implements DynamicPlatformPlugin {
         const uuid = this.api.hap.uuid.generate('Rainbow Effect');
         const existingAccessory = this.accessories.get(uuid);
         if (existingAccessory) {
-          removedAccessories.delete(uuid);
           this.log.info('Restoring existing accessory from cache:', existingAccessory.displayName);
           // oxlint-disable-next-line no-new
           new RainbowAccessory(this, existingAccessory, dioderAccessories);
@@ -87,7 +89,6 @@ export default class DioderPlatform implements DynamicPlatformPlugin {
         const uuid = this.api.hap.uuid.generate(JSON.stringify(c));
         const existingAccessory = this.accessories.get(uuid) as PlatformAccessory<GradiantContext>;
         if (existingAccessory) {
-          removedAccessories.delete(uuid);
           this.log.info('Restoring existing accessory from cache:', existingAccessory.displayName);
           // oxlint-disable-next-line no-new
           new GradientAccessory(this, existingAccessory, dioderAccessories);
@@ -100,21 +101,18 @@ export default class DioderPlatform implements DynamicPlatformPlugin {
           this.api.registerPlatformAccessories(PLUGIN_NAME, 'Dioder', [accessory]);
         }
       }
-      // removed unused Accessories
-      if (removedAccessories.size > 0) {
-        const ra = Array.from(removedAccessories).map(([_key, value]) => value);
-        this.log.warn(
-          'removing unused accessories',
-          ra.map(a => a.displayName)
-        );
-        this.api.unregisterPlatformAccessories(PLUGIN_NAME, 'Dioder', ra);
-      }
     });
   }
 
   configureAccessory(accessory: PlatformAccessory): void {
-    this.log.info('Loading accessory from cache:', accessory.displayName);
-    this.accessories.set(accessory.UUID, accessory);
+    const c = this.config.leds.find(l => l.name === accessory.displayName);
+    if (this.api.hap.uuid.generate(JSON.stringify(c)) === accessory.UUID) {
+      this.log.info('Loading accessory from cache:', accessory.displayName);
+      this.accessories.set(accessory.UUID, accessory);
+    } else {
+      this.log.info('Removing outdated accessory from cache:', accessory.displayName);
+      this.outdatedAccessories.push(accessory);
+    }
   }
 
   // oxlint-disable-next-line promise/prefer-await-to-callbacks
