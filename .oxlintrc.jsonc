@@ -1,7 +1,6 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["typescript", "oxc", "unicorn", "import", "jsdoc", "promise", "node"],
-  "ignorePatterns": ["*.d.ts"],
+  "plugins": ["typescript", "oxc", "unicorn", "import", "promise", "node"],
   "categories": {
     "correctness": "error",
     "suspicious": "error",
@@ -52,8 +51,6 @@
     "import/no-mutable-exports": "off",
     "import/no-named-export": "off",
     "import/no-relative-parent-imports": "off",
-    "jsdoc/require-param-description": "off",
-    "jsdoc/require-returns-description": "off",
     "promise/always-return": "off",
     "promise/catch-or-return": "off",
     "promise/no-nesting": "off",
