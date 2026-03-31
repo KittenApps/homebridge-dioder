@@ -48,6 +48,7 @@ export default class DioderPlatform implements DynamicPlatformPlugin {
     this.api.on('didFinishLaunching', () => {
       this.log.debug('Executed didFinishLaunching callback');
       const removedAccessories = this.accessories;
+      const newAccessories: PlatformAccessory[] = [];
       // DioderAccessories
       const dioderAccessories: DioderAccessory[] = [];
       const gpiochip = lg.gpiochipOpen(0);
@@ -63,7 +64,7 @@ export default class DioderPlatform implements DynamicPlatformPlugin {
           const accessory = new this.api.platformAccessory<DioderContext>(c.name, uuid);
           accessory.context.config = c;
           dioderAccessories.push(new DioderAccessory(this, accessory, gpiochip));
-          this.api.registerPlatformAccessories(PLUGIN_NAME, 'Dioder', [accessory]);
+          newAccessories.push(accessory);
         }
       }
       // RainbowAccessory
@@ -80,7 +81,7 @@ export default class DioderPlatform implements DynamicPlatformPlugin {
           const accessory = new this.api.platformAccessory('Rainbow Effect', uuid);
           // oxlint-disable-next-line no-new
           new RainbowAccessory(this, accessory, dioderAccessories);
-          this.api.registerPlatformAccessories(PLUGIN_NAME, 'Dioder', [accessory]);
+          newAccessories.push(accessory);
         }
       }
       // GradientAccessory
@@ -98,7 +99,7 @@ export default class DioderPlatform implements DynamicPlatformPlugin {
           accessory.context.config = c;
           // oxlint-disable-next-line no-new
           new GradientAccessory(this, accessory, dioderAccessories);
-          this.api.registerPlatformAccessories(PLUGIN_NAME, 'Dioder', [accessory]);
+          newAccessories.push(accessory);
         }
       }
       // removed unused Accessories
@@ -109,6 +110,13 @@ export default class DioderPlatform implements DynamicPlatformPlugin {
           ra.map(a => a.displayName)
         );
         this.api.unregisterPlatformAccessories(PLUGIN_NAME, 'Dioder', ra);
+      }
+      if (newAccessories.length > 0) {
+        this.log.info(
+          'added new accessories',
+          newAccessories.map(a => a.displayName)
+        );
+        this.api.registerPlatformAccessories(PLUGIN_NAME, 'Dioder', newAccessories);
       }
     });
   }
