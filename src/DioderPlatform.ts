@@ -4,6 +4,7 @@ import lg from 'lgpio';
 import DioderAccessory from './DioderAccessory';
 import GradientAccessory from './GradientAccessory';
 import RainbowAccessory from './RainbowAccessory';
+import DummyAccessory from './DummyAccessory';
 
 export interface LedConfig {
   name: string;
@@ -54,7 +55,7 @@ export default class DioderPlatform implements DynamicPlatformPlugin {
         'removing unused accessories',
         this.al.map(a => `${a.displayName} (${a.UUID})`)
       );
-      this.al.forEach(a => new DioderAccessory(this, a as PlatformAccessory<DioderContext>, gpiochip));
+      this.al.forEach(a => new DummyAccessory(this, a, a.displayName));
       this.api.unregisterPlatformAccessories(PLUGIN_NAME, 'Dioder', this.al);
       const newAccessories: PlatformAccessory[] = [];
       // DioderAccessories
