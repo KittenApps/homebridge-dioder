@@ -47,7 +47,7 @@ export default class DioderPlatform implements DynamicPlatformPlugin {
     this.log.debug('Finished initializing platform: Dioder');
     this.api.on('didFinishLaunching', () => {
       this.log.debug('Executed didFinishLaunching callback');
-      const removedAccessories = this.accessories;
+      const removedAccessories = new Map(this.accessories);
       const newAccessories: PlatformAccessory[] = [];
       // DioderAccessories
       const dioderAccessories: DioderAccessory[] = [];
@@ -107,14 +107,14 @@ export default class DioderPlatform implements DynamicPlatformPlugin {
         const ra = Array.from(removedAccessories).map(([_k, v]) => v);
         this.log.warn(
           'removing unused accessories',
-          ra.map(a => a.displayName)
+          ra.map(a => `${a.displayName} (${a.UUID})`)
         );
         this.api.unregisterPlatformAccessories(PLUGIN_NAME, 'Dioder', ra);
       }
       if (newAccessories.length > 0) {
         this.log.info(
           'added new accessories',
-          newAccessories.map(a => a.displayName)
+          newAccessories.map(a => `${a.displayName} (${a.UUID})`)
         );
         this.api.registerPlatformAccessories(PLUGIN_NAME, 'Dioder', newAccessories);
       }
