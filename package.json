@@ -1,7 +1,7 @@
 {
   "name": "@silizia/homebridge-dioder",
   "displayName": "Homebridge Dioder",
-  "version": "0.1.19",
+  "version": "0.2.0",
   "description": "Homebridge plugin to control Dioder LED strips over pigpio pins",
   "keywords": [
     "homebridge-plugin"
@@ -24,6 +24,7 @@
   "scripts": {
     "prepare": "rolldown -c",
     "build": "rolldown -c",
+    "watch": "rolldown -c -w",
     "test": "oxlint && oxfmt --check",
     "lint": "oxlint",
     "format": "oxfmt",
@@ -35,14 +36,14 @@
   },
   "devDependencies": {
     "@types/node": "^24.12.0",
-    "homebridge": "^1.11.4",
+    "homebridge": "^2.0.0-beta.82",
     "oxfmt": "^0.43.0",
     "oxlint": "^1.58.0",
     "oxlint-tsgolint": "^0.18.1",
     "rolldown": "^1.0.0-rc.12"
   },
   "engines": {
-    "homebridge": "^1.3.5",
+    "homebridge": "^1.3.5 || ^2.0.0-beta.0",
     "node": ">=24.12.0"
   }
 }

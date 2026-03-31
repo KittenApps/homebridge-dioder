@@ -53,11 +53,17 @@ export default class DioderPlatform implements DynamicPlatformPlugin {
       const dioderAccessories: DioderAccessory[] = [];
       const gpiochip = lg.gpiochipOpen(0);
       for (const c of this.config.leds || []) {
-        const uuid = this.api.hap.uuid.generate(JSON.stringify(c));
+        const uuid = this.api.hap.uuid.generate(JSON.stringify(c.name));
         const existingAccessory = this.accessories.get(uuid) as PlatformAccessory<DioderContext>;
         if (existingAccessory) {
           removedAccessories.delete(uuid);
           this.log.info('Restoring existing accessory from cache:', existingAccessory.displayName);
+          const ec = existingAccessory.context.config;
+          if (c.rPin !== ec.rPin || c.gPin !== ec.gPin || c.bPin !== ec.bPin || c.freq !== ec.freq) {
+            existingAccessory.context.config = c;
+            this.log.info('Updating existing accessory config:', c.name);
+            this.api.updatePlatformAccessories([existingAccessory]);
+          }
           dioderAccessories.push(new DioderAccessory(this, existingAccessory, gpiochip));
         } else {
           this.log.info('Adding new accessory:', c.name);
@@ -86,11 +92,17 @@ export default class DioderPlatform implements DynamicPlatformPlugin {
       }
       // GradientAccessory
       for (const c of this.config.gradientAnim || []) {
-        const uuid = this.api.hap.uuid.generate(JSON.stringify(c));
+        const uuid = this.api.hap.uuid.generate(JSON.stringify(c.name));
         const existingAccessory = this.accessories.get(uuid) as PlatformAccessory<GradiantContext>;
         if (existingAccessory) {
           removedAccessories.delete(uuid);
           this.log.info('Restoring existing accessory from cache:', existingAccessory.displayName);
+          const ec = existingAccessory.context.config;
+          if (c.colors.toString() !== ec.colors.toString()) {
+            existingAccessory.context.config = c;
+            this.log.info('Updating existing accessory config:', c.name);
+            this.api.updatePlatformAccessories([existingAccessory]);
+          }
           // oxlint-disable-next-line no-new
           new GradientAccessory(this, existingAccessory, dioderAccessories);
         } else {
