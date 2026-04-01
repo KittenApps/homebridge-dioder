@@ -5,4 +5,5 @@ export default defineConfig({
   external: /^[^./]/,
   platform: 'node',
   output: { file: 'dist/index.mjs', format: 'esm', sourcemap: true },
+  transform: { target: 'node24', define: { DEV: `${!!process.env.DEV}` } },
 });

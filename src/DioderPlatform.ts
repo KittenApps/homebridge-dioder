@@ -5,6 +5,10 @@ import DioderAccessory from './DioderAccessory';
 import GradientAccessory from './GradientAccessory';
 import RainbowAccessory from './RainbowAccessory';
 
+declare global {
+  var DEV: boolean;
+}
+
 export interface LedConfig {
   name: string;
   rPin: number;
@@ -51,7 +55,7 @@ export default class DioderPlatform implements DynamicPlatformPlugin {
       const newAccessories: PlatformAccessory[] = [];
       // DioderAccessories
       const dioderAccessories: DioderAccessory[] = [];
-      const gpiochip = lg.gpiochipOpen(0);
+      const gpiochip = DEV ? 0 : lg.gpiochipOpen(0);
       for (const c of this.config.leds || []) {
         const uuid = this.api.hap.uuid.generate(JSON.stringify(c.name));
         const existingAccessory = this.accessories.get(uuid) as PlatformAccessory<DioderContext>;
