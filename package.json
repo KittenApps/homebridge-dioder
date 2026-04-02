@@ -1,7 +1,7 @@
 {
   "name": "@silizia/homebridge-dioder",
   "displayName": "Homebridge Dioder",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Homebridge plugin to control Dioder LED strips over pigpio pins",
   "keywords": [
     "homebridge-plugin"
