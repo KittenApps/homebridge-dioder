@@ -20,7 +20,7 @@
     "config.schema.json"
   ],
   "type": "module",
-  "main": "dist/matter.js",
+  "main": "dist/index.js",
   "scripts": {
     "prepare": "rolldown -c",
     "build": "rolldown -c",
