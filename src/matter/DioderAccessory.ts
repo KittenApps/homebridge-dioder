@@ -63,9 +63,30 @@ export default class DioderAccessory {
       this.log.info(`gpin ${this.config.gPin} to ${g === 0 ? 'off' : (g / 255) ** GAMMA_COR * (100 - MIN_PWM) + MIN_PWM}`);
       this.log.info(`bpin ${this.config.bPin} to ${b === 0 ? 'off' : (b / 255) ** GAMMA_COR * (100 - MIN_PWM) + MIN_PWM}`);
     } else {
-      lg.txPwm(this.gpiochip, this.config.rPin, this.config.freq ?? PWM_FREQUENCY, r === 0 ? 0 : (r / 255) ** GAMMA_COR * (100 - MIN_PWM) + MIN_PWM, 0, r === 0 ? 1 : 0);
-      lg.txPwm(this.gpiochip, this.config.gPin, this.config.freq ?? PWM_FREQUENCY, g === 0 ? 0 : (g / 255) ** GAMMA_COR * (100 - MIN_PWM) + MIN_PWM, 0, g === 0 ? 1 : 0);
-      lg.txPwm(this.gpiochip, this.config.bPin, this.config.freq ?? PWM_FREQUENCY, b === 0 ? 0 : (b / 255) ** GAMMA_COR * (100 - MIN_PWM) + MIN_PWM, 0, b === 0 ? 1 : 0);
+      lg.txPwm(
+        this.gpiochip,
+        this.config.rPin,
+        this.config.freq ?? PWM_FREQUENCY,
+        r === 0 ? 0 : (r / 255) ** GAMMA_COR * (100 - MIN_PWM) + MIN_PWM,
+        0,
+        r === 0 ? 1 : 0
+      );
+      lg.txPwm(
+        this.gpiochip,
+        this.config.gPin,
+        this.config.freq ?? PWM_FREQUENCY,
+        g === 0 ? 0 : (g / 255) ** GAMMA_COR * (100 - MIN_PWM) + MIN_PWM,
+        0,
+        g === 0 ? 1 : 0
+      );
+      lg.txPwm(
+        this.gpiochip,
+        this.config.bPin,
+        this.config.freq ?? PWM_FREQUENCY,
+        b === 0 ? 0 : (b / 255) ** GAMMA_COR * (100 - MIN_PWM) + MIN_PWM,
+        0,
+        b === 0 ? 1 : 0
+      );
     }
   }
 
@@ -73,7 +94,7 @@ export default class DioderAccessory {
     if (c.v > 0) {
       const { r, g, b } = colord(c).toRgb();
       this.pwm(r, g, b);
-      this.log.info(`set ${this.config.name} r: ${r}, g: ${g}, b: ${b} or h: ${c.h}, s: ${c.s}, v: ${c.v}`);
+      this.log.info(`MATTER: set ${this.config.name} r: ${r}, g: ${g}, b: ${b} or h: ${c.h}, s: ${c.s}, v: ${c.v}`);
     } else {
       this.log.warn('Skipping color change while light bulb being off');
     }
