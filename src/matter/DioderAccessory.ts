@@ -34,7 +34,17 @@ export default class DioderAccessory {
       clusters: {
         onOff: { onOff: false },
         levelControl: { currentLevel: 254, minLevel: 1, maxLevel: 254 },
-        colorControl: { currentHue: 0, currentSaturation: 254, colorMode: this.api.matter.types.ColorControl.ColorMode.CurrentHueAndCurrentSaturation },
+        colorControl: {
+          currentHue: 0,
+          currentSaturation: 254,
+          colorMode: this.api.matter.types.ColorControl.ColorMode.CurrentHueAndCurrentSaturation,
+          currentX: 41942,
+          currentY: 21626,
+          colorTemperatureMireds: 250,
+          colorTempPhysicalMinMireds: 147,
+          colorTempPhysicalMaxMireds: 454,
+          coupleColorTempToLevelMinMireds: 147,
+        },
       },
       handlers: {
         onOff: { on: (): Promise<void> => this.handleOn(), off: (): void => this.handleOff() },
