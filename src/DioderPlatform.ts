@@ -42,6 +42,7 @@ export default class DioderPlatform implements DynamicPlatformPlugin {
   public readonly accessories: Map<string, PlatformAccessory> = new Map();
   public readonly outdatedAccessories: PlatformAccessory[] = [];
   public animationCancel?: () => void = undefined;
+  private gpiochip?: number;
 
   constructor(
     public readonly log: Logging,
@@ -55,7 +56,7 @@ export default class DioderPlatform implements DynamicPlatformPlugin {
       const newAccessories: PlatformAccessory[] = [];
       // DioderAccessories
       const dioderAccessories: DioderAccessory[] = [];
-      const gpiochip = DEV ? 0 : lg.gpiochipOpen(0);
+      this.gpiochip = DEV ? 0 : lg.gpiochipOpen(0);
       for (const c of this.config.leds || []) {
         const uuid = this.api.hap.uuid.generate(JSON.stringify(c.name));
         const existingAccessory = this.accessories.get(uuid) as PlatformAccessory<DioderContext>;
@@ -68,12 +69,12 @@ export default class DioderPlatform implements DynamicPlatformPlugin {
             this.log.info('Updating existing accessory config:', c.name);
             this.api.updatePlatformAccessories([existingAccessory]);
           }
-          dioderAccessories.push(new DioderAccessory(this, existingAccessory, gpiochip));
+          dioderAccessories.push(new DioderAccessory(this, existingAccessory, this.gpiochip));
         } else {
           this.log.info('Adding new accessory:', c.name);
           const accessory = new this.api.platformAccessory<DioderContext>(c.name, uuid);
           accessory.context.config = c;
-          dioderAccessories.push(new DioderAccessory(this, accessory, gpiochip));
+          dioderAccessories.push(new DioderAccessory(this, accessory, this.gpiochip));
           newAccessories.push(accessory);
         }
       }
@@ -133,6 +134,11 @@ export default class DioderPlatform implements DynamicPlatformPlugin {
           newAccessories.map(a => `${a.displayName} (${a.UUID})`)
         );
         this.api.registerPlatformAccessories(PLUGIN_NAME, 'Dioder', newAccessories);
+      }
+    });
+    this.api.on('shutdown', () => {
+      if (!DEV && this.gpiochip !== undefined) {
+        lg.gpiochipClose(this.gpiochip);
       }
     });
   }
