@@ -1,9 +1,9 @@
 import { defineConfig } from 'rolldown';
 
 export default defineConfig({
-  input: 'src/index.ts',
+  input: { index: 'src/index.ts', matter: 'src/matter/index.ts' },
   external: /^[^./]/,
   platform: 'node',
-  output: { file: 'dist/index.mjs', format: 'esm', sourcemap: true },
+  output: { dir: 'dist', format: 'esm', sourcemap: true, cleanDir: true },
   transform: { target: 'node24', define: { DEV: `${!!process.env.DEV}` } },
 });

@@ -46,7 +46,7 @@ export default class DioderPlatform implements DynamicPlatformPlugin {
       // DioderAccessories
       this.gpiochip = DEV ? 0 : lg.gpiochipOpen(0);
       for (const c of this.config.leds || []) {
-        const uuid = this.api.hap.uuid.generate(JSON.stringify(c.name));
+        const uuid = this.api.matter.uuid.generate(JSON.stringify(c.name));
         const existingAccessory = this.accessories.get(uuid) as MatterAccessory<Record<string, never>>;
         if (existingAccessory) {
           removedAccessories.delete(uuid);
