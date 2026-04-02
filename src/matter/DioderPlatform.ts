@@ -78,6 +78,11 @@ export default class DioderPlatform implements DynamicPlatformPlugin {
     });
     this.api.on('shutdown', () => {
       if (!DEV && this.gpiochip !== undefined) {
+        for (const c of this.config.leds || []) {
+          lg.gpioFree(this.gpiochip, c.rPin);
+          lg.gpioFree(this.gpiochip, c.gPin);
+          lg.gpioFree(this.gpiochip, c.bPin);
+        }
         lg.gpiochipClose(this.gpiochip);
       }
     });

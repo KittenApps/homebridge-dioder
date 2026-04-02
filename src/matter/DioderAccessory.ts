@@ -18,6 +18,12 @@ export default class DioderAccessory {
     private readonly config: LedConfig,
     accessory?: MatterAccessory<Record<string, never>>
   ) {
+    if (!DEV) {
+      lg.gpioClaimOutput(gpiochip, this.config.rPin);
+      lg.gpioClaimOutput(gpiochip, this.config.gPin);
+      lg.gpioClaimOutput(gpiochip, this.config.bPin);
+    }
+
     this.accessory = accessory ?? {
       UUID: this.api.hap.uuid.generate(this.config.name),
       displayName: this.config.name,
@@ -37,12 +43,6 @@ export default class DioderAccessory {
       },
       context: {},
     };
-
-    if (!DEV) {
-      lg.gpioClaimOutput(gpiochip, this.config.rPin);
-      lg.gpioClaimOutput(gpiochip, this.config.gPin);
-      lg.gpioClaimOutput(gpiochip, this.config.bPin);
-    }
   }
 
   getBrightness(): number {
